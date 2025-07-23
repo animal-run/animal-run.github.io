@@ -107,6 +107,8 @@
   </style>
 </head>
 <body>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4252360374523568"
+    crossorigin="anonymous"></script>
   <h1>동물 달리기 추첨기</h1>
 
   <div class="grid" id="animal-grid"></div>
@@ -155,7 +157,7 @@
 
     // 경주 시작
     startBtn.addEventListener('click', () => {
-      const trackBgList = ['track-background.png', 'background-sand.png', 'background-savannah.png'];
+      const trackBgList = ['background-track.png', 'background-sand.png', 'background-savannah.png'];
       raceContainer.style.background = `url('./images/${trackBgList[Math.floor(Math.random()*trackBgList.length)]}') repeat-x bottom`;
       raceContainer.style.backgroundSize = 'cover';
 
