@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">  <!-- 모바일 대응 -->
+  <title>동물 달리기 추첨기</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));  /* 반응형 컬럼 */
+      gap: 10px;
+      width: 100%;
+      max-width: 600px;
+      backdrop-filter: blur(4px);
+      background: rgba(255,255,255,0.8);
+      padding: 10px;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+    .item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .item img {
+      width: 100%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      transition: transform .2s;
+    }
+    .item img:hover { transform: scale(1.05); }
+    .item img.selected {
+      border-color: #4caf50;
+      box-shadow: 0 0 10px rgba(76,175,80,0.5);
+    }
+    .caption {
+      margin-top: 6px;
+      font-size: 0.9rem;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin: 15px 0;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transition: background .2s;
+      width: 90%;
+      max-width: 300px;
+    }
+    button:hover:not(:disabled) { background: #45a049; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #race-container {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      margin: 10px auto;
+      overflow: visible;
+      border-top: 2px solid #ccc;
+      border-bottom: 2px solid #ccc;
+      background-size: cover;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+    .runner {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      height: 60px;
+      padding-left: 8px;
+      will-change: transform;
+    }
+    .runner img {
+      width: 40px;  /* 모바일 축소 */
+      margin-right: 8px;
+    }
+    .runner .rank {
+      margin-left: 8px;
+      font-weight: bold;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #333;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.7);
+      word-break: keep-all;
+    }
+  </style>
+</head>
+<body>
+  <h1>동물 달리기 추첨기</h1>
+
+  <div class="grid" id="animal-grid"></div>
+  <button id="start-btn" disabled>경주 시작</button>
+  
+  <div id="race-container" style="display:none;"></div>
+  <div id="result"></div>
+
+  <script>
+    const animalNames = [
+      '원숭이', '펭귄', '분홍 토끼', '기린', '여우',
+      '코끼리', '판다', '호랑이', '코알라', '흰색 토끼'
+    ];
+    const grid = document.getElementById('animal-grid');
+    const startBtn = document.getElementById('start-btn');
+    const raceContainer = document.getElementById('race-container');
+    const resultDiv = document.getElementById('result');
+    const images = animalNames.map((_, i) => `./images/animal${i+1}.png`);
+    let selected = [];
+
+    // 이미지+이름 로드 및 선택 기능
+    images.forEach((src, idx) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'item';
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = animalNames[idx];
+      img.addEventListener('click', () => toggleSelect(img, idx));
+      const cap = document.createElement('span');
+      cap.className = 'caption';
+      cap.textContent = animalNames[idx];
+      wrapper.append(img, cap);
+      grid.appendChild(wrapper);
+    });
+
+    function toggleSelect(img, idx) {
+      if (img.classList.contains('selected')) {
+        img.classList.remove('selected');
+        selected = selected.filter(i => i !== idx);
+      } else if (selected.length < 10) {
+        img.classList.add('selected');
+        selected.push(idx);
+      }
+      startBtn.disabled = selected.length < 2 || selected.length > 10;
+    }
+
+    // 경주 시작
+    startBtn.addEventListener('click', () => {
+      const trackBgList = ['track-background.png', 'background-sand.png', 'background-savannah.png'];
+      raceContainer.style.background = `url('./images/${trackBgList[Math.floor(Math.random()*trackBgList.length)]}') repeat-x bottom`;
+      raceContainer.style.backgroundSize = 'cover';
+
+      grid.style.display = 'none';
+      startBtn.style.display = 'none';
+      raceContainer.style.display = 'block';
+      raceContainer.style.height = `${selected.length * 60}px`;
+      runRace(selected);
+    });
+
+    function runRace(arr) {
+      const trackWidth = raceContainer.clientWidth - 60;
+      const finishOrder = [];
+
+      arr.forEach((idx, i) => {
+        const runner = document.createElement('div');
+        runner.className = 'runner';
+        runner.style.top = `${i * 60}px`;
+        const img = document.createElement('img');
+        img.src = images[idx];
+        runner.appendChild(img);
+        raceContainer.appendChild(runner);
+
+        const duration = Math.random() * 3000 + 3000;
+        runner.style.transition = `transform ${duration}ms linear`;
+        requestAnimationFrame(() => runner.style.transform = `translateX(${trackWidth}px)`);
+
+        runner.addEventListener('transitionend', () => {
+          finishOrder.push({ idx, runner });
+          const rankEl = document.createElement('span');
+          rankEl.className = 'rank';
+          rankEl.textContent = `${finishOrder.length}위`;
+          runner.appendChild(rankEl);
+
+          if (finishOrder.length === arr.length) {
+            const last = finishOrder[finishOrder.length - 1];
+            resultDiv.textContent = `🎉 당첨(꼴등): ${animalNames[last.idx]}`;
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>
