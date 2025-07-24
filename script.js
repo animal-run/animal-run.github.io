@@ -98,11 +98,11 @@ function runRace(arr, trackImg) {
     let totalFrames;
     const randomType = Math.random();
     if (randomType < 0.2) {
-      totalFrames = Math.random() * 20 + 300; // 빠른 그룹 300~320
+      totalFrames = Math.random() * 20 + 500; // 빠른 그룹
     } else if (randomType < 0.8) {
-      totalFrames = Math.random() * 60 + 330; // 보통 그룹 330~390
+      totalFrames = Math.random() * 60 + 530; // 보통 그룹
     } else {
-      totalFrames = Math.random() * 20 + 400; // 느린 그룹 400~420
+      totalFrames = Math.random() * 20 + 600; // 느린 그룹
     }
 
     const baseSpeed = trackWidth / totalFrames;
@@ -139,7 +139,7 @@ function runRace(arr, trackImg) {
         }
         // 후발주자(뒤 그룹)
         else if (runner.x === minX && Math.random() < 0.55) {
-          speedFactor = Math.random() * 1.2 + 2.1; // 2.1~3.3배
+          speedFactor = Math.random() * 1.0 + 2.0; // 2.0~3.0배
         }
       }
 
