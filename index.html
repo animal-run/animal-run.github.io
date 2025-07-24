@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>동물 달리기 추첨기</title>
+  <title>동물 달리기 추첨</title>
   <style>
     html, body {
       height: 100%;
@@ -87,14 +87,20 @@
       height: 60px;
       padding-left: 8px;
       will-change: transform;
+      transition: transform 0.1s ease-out;
     }
     .runner img {
       width: 40px;
       margin-right: 8px;
+      transition: transform 0.2s ease-in-out;
     }
-    .runner .rank {
-      margin-left: 8px;
-      font-weight: bold;
+    .runner.jump img {
+      animation: jump 0.4s ease-out;
+    }
+    @keyframes jump {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
     }
     #result {
       margin-top: 20px;
@@ -109,7 +115,7 @@
 <body>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4252360374523568"
     crossorigin="anonymous"></script>
-  <h1>동물 달리기 추첨기</h1>
+  <h1>동물 달리기 추첨</h1>
 
   <div class="grid" id="animal-grid"></div>
   <button id="start-btn" disabled>경주 시작</button>
@@ -129,7 +135,7 @@
     const images = animalNames.map((_, i) => `./images/animal${i+1}.png`);
     let selected = [];
 
-    // 동물 이미지와 선택 기능
+    // 이미지 생성 및 선택 기능
     images.forEach((src, idx) => {
       const wrapper = document.createElement('div');
       wrapper.className = 'item';
@@ -167,7 +173,7 @@
       runRace(selected);
     });
 
-    // 프레임 단위 경주 애니메이션
+    // 개선된 경주 애니메이션
     function runRace(arr) {
       raceContainer.innerHTML = "";
       const trackWidth = raceContainer.clientWidth - 60;
@@ -183,13 +189,22 @@
         runner.appendChild(img);
         raceContainer.appendChild(runner);
 
+        // 원래 transition과 비슷한 총 시간 맞추기
+        const totalFrames = Math.random() * 60 + 180; // 3~6초 정도(60fps 기준)
+        const baseSpeed = trackWidth / totalFrames;
+
         runners.push({
           idx,
           el: runner,
           x: 0,
-          speed: Math.random() * 1.5 + 1,      // 초기 속도
-          accel: Math.random() * 0.05 - 0.025, // 가속/감속
-          maxSpeed: Math.random() * 3 + 2      // 최고 속도
+          baseSpeed: baseSpeed,
+          speed: baseSpeed,
+          changeFrames: [ // 속도 바뀌는 타이밍 2~3회
+            Math.floor(totalFrames * 0.3),
+            Math.floor(totalFrames * 0.6),
+            Math.floor(totalFrames * 0.85)
+          ],
+          frame: 0
         });
       });
 
@@ -197,17 +212,23 @@
         runners.forEach(runner => {
           if (finishOrder.includes(runner)) return;
 
-          // 속도 변화
-          runner.speed += runner.accel;
-          if (runner.speed > runner.maxSpeed) runner.speed = runner.maxSpeed;
-          if (runner.speed < 0.5) runner.speed = 0.5;
+          runner.frame++;
+
+          // 2~3회 속도 랜덤 변환
+          if (runner.changeFrames.includes(runner.frame)) {
+            runner.speed = runner.baseSpeed * (Math.random() * 0.6 + 0.7); // 0.7~1.3배
+          }
+
+          // 좌우 흔들림 효과(추월 느낌)
+          const wobble = Math.sin(runner.frame / 5) * 2; 
 
           runner.x += runner.speed;
-          runner.el.style.transform = `translateX(${runner.x}px)`;
+          runner.el.style.transform = `translate(${runner.x}px, ${wobble}px)`;
 
           // 결승선 도달
           if (runner.x >= trackWidth) {
             finishOrder.push(runner);
+            runner.el.classList.add('jump'); // 점프 효과
             const rankEl = document.createElement('span');
             rankEl.className = 'rank';
             rankEl.textContent = `${finishOrder.length}위`;
