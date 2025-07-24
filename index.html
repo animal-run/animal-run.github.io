@@ -3,251 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>동물 달리기 추첨</title>
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 10px;
-      box-sizing: border-box;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      gap: 10px;
-      width: 100%;
-      max-width: 600px;
-      backdrop-filter: blur(4px);
-      background: rgba(255,255,255,0.8);
-      padding: 10px;
-      border-radius: 8px;
-      box-sizing: border-box;
-    }
-    .item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .item img {
-      width: 100%;
-      cursor: pointer;
-      border: 2px solid transparent;
-      border-radius: 8px;
-      transition: transform .2s;
-    }
-    .item img:hover { transform: scale(1.05); }
-    .item img.selected {
-      border-color: #4caf50;
-      box-shadow: 0 0 10px rgba(76,175,80,0.5);
-    }
-    .caption {
-      margin-top: 6px;
-      font-size: 0.9rem;
-    }
-    button {
-      padding: 12px 20px;
-      font-size: 1rem;
-      cursor: pointer;
-      margin: 15px 0;
-      background: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      transition: background .2s;
-      width: 90%;
-      max-width: 300px;
-    }
-    button:hover:not(:disabled) { background: #45a049; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    #race-container {
-      position: relative;
-      width: 100%;
-      max-width: 600px;
-      margin: 10px auto;
-      overflow: visible;
-      border-top: 2px solid #ccc;
-      border-bottom: 2px solid #ccc;
-      background-size: cover;
-      border-radius: 8px;
-      box-sizing: border-box;
-    }
-    .runner {
-      position: absolute;
-      display: flex;
-      align-items: center;
-      height: 60px;
-      padding-left: 8px;
-      will-change: transform;
-      transition: transform 0.1s ease-out;
-    }
-    .runner img {
-      width: 40px;
-      margin-right: 8px;
-      transition: transform 0.2s ease-in-out;
-    }
-    .runner.jump img {
-      animation: jump 0.4s ease-out;
-    }
-    @keyframes jump {
-      0% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0); }
-    }
-    #result {
-      margin-top: 20px;
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: #333;
-      text-shadow: 1px 1px 2px rgba(255,255,255,0.7);
-      word-break: keep-all;
-    }
-  </style>
+  <title>🐾 애니멀고 🏁</title>
+  <link rel="icon" href="./images/favicon.png" type="image/png">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4252360374523568"
     crossorigin="anonymous"></script>
-  <h1>동물 달리기 추첨</h1>
+    
+  <h1>🐾 애니멀고 🏁</h1>
 
   <div class="grid" id="animal-grid"></div>
+  <div class="options" id="options">
+    <select id="mode">
+      <option value="win" selected>당첨</option>
+      <option value="lose">탈락</option>
+    </select>
+    <select id="count"></select>
+  </div>
   <button id="start-btn" disabled>경주 시작</button>
-  
+
   <div id="race-container" style="display:none;"></div>
   <div id="result"></div>
 
-  <script>
-    const animalNames = [
-      '원숭이', '펭귄', '분홍 토끼', '기린', '여우',
-      '코끼리', '판다', '호랑이', '코알라', '흰색 토끼'
-    ];
-    const grid = document.getElementById('animal-grid');
-    const startBtn = document.getElementById('start-btn');
-    const raceContainer = document.getElementById('race-container');
-    const resultDiv = document.getElementById('result');
-    const images = animalNames.map((_, i) => `./images/animal${i+1}.png`);
-    let selected = [];
+  <footer>
+    © 2025 애니멀고 | 동물들과 함께하는 달리기 추첨 레이스  
+    <br>문의: gimcode90@gmail.com
+  </footer>
 
-    // 이미지 생성 및 선택 기능
-    images.forEach((src, idx) => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'item';
-      const img = document.createElement('img');
-      img.src = src;
-      img.alt = animalNames[idx];
-      img.addEventListener('click', () => toggleSelect(img, idx));
-      const cap = document.createElement('span');
-      cap.className = 'caption';
-      cap.textContent = animalNames[idx];
-      wrapper.append(img, cap);
-      grid.appendChild(wrapper);
-    });
-
-    function toggleSelect(img, idx) {
-      if (img.classList.contains('selected')) {
-        img.classList.remove('selected');
-        selected = selected.filter(i => i !== idx);
-      } else if (selected.length < 10) {
-        img.classList.add('selected');
-        selected.push(idx);
-      }
-      startBtn.disabled = selected.length < 2 || selected.length > 10;
-    }
-
-    startBtn.addEventListener('click', () => {
-      const trackBgList = ['background-track.png', 'background-sand.png', 'background-savannah.png'];
-      raceContainer.style.background = `url('./images/${trackBgList[Math.floor(Math.random()*trackBgList.length)]}') repeat-x bottom`;
-      raceContainer.style.backgroundSize = 'cover';
-
-      grid.style.display = 'none';
-      startBtn.style.display = 'none';
-      raceContainer.style.display = 'block';
-      raceContainer.style.height = `${selected.length * 60}px`;
-      runRace(selected);
-    });
-
-    // 개선된 경주 애니메이션
-    function runRace(arr) {
-      raceContainer.innerHTML = "";
-      const trackWidth = raceContainer.clientWidth - 60;
-      const runners = [];
-      const finishOrder = [];
-
-      arr.forEach((idx, i) => {
-        const runner = document.createElement('div');
-        runner.className = 'runner';
-        runner.style.top = `${i * 60}px`;
-        const img = document.createElement('img');
-        img.src = images[idx];
-        runner.appendChild(img);
-        raceContainer.appendChild(runner);
-
-        // 원래 transition과 비슷한 총 시간 맞추기
-        const totalFrames = Math.random() * 180 + 180; // 3~6초 정도(60fps 기준)
-        const baseSpeed = trackWidth / totalFrames;
-
-        runners.push({
-          idx,
-          el: runner,
-          x: 0,
-          baseSpeed: baseSpeed,
-          speed: baseSpeed,
-          changeFrames: [ // 속도 바뀌는 타이밍 2~3회
-            Math.floor(totalFrames * 0.3),
-            Math.floor(totalFrames * 0.6),
-            Math.floor(totalFrames * 0.85)
-          ],
-          frame: 0
-        });
-      });
-
-      function animate() {
-        runners.forEach(runner => {
-          if (finishOrder.includes(runner)) return;
-
-          runner.frame++;
-
-          // 2~3회 속도 랜덤 변환
-          if (runner.changeFrames.includes(runner.frame)) {
-            runner.speed = runner.baseSpeed * (Math.random() * 0.6 + 0.7); // 0.7~1.3배
-          }
-
-          // 좌우 흔들림 효과(추월 느낌)
-          const wobble = Math.sin(runner.frame / 5) * 2; 
-
-          runner.x += runner.speed;
-          runner.el.style.transform = `translate(${runner.x}px, ${wobble}px)`;
-
-          // 결승선 도달
-          if (runner.x >= trackWidth) {
-            finishOrder.push(runner);
-            runner.el.classList.add('jump'); // 점프 효과
-            const rankEl = document.createElement('span');
-            rankEl.className = 'rank';
-            rankEl.textContent = `${finishOrder.length}위`;
-            runner.el.appendChild(rankEl);
-
-            if (finishOrder.length === arr.length) {
-              const last = finishOrder[finishOrder.length - 1];
-              resultDiv.textContent = `🎉 당첨(꼴등): ${animalNames[last.idx]}`;
-            }
-          }
-        });
-
-        if (finishOrder.length < arr.length) {
-          requestAnimationFrame(animate);
-        }
-      }
-
-      requestAnimationFrame(animate);
-    }
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
