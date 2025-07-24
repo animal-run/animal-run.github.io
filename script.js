@@ -89,7 +89,7 @@ function runRace(arr,trackImg){
     runner.appendChild(img); runner.appendChild(rankEl);
     raceContainer.appendChild(runner);
 
-    const totalFrames=Math.random()*60+240;
+    const totalFrames=Math.random()*180+300;
     const baseSpeed=trackWidth/totalFrames;
     const changeFrames=[];
     while(changeFrames.length<3){
