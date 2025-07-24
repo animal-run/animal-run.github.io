@@ -85,11 +85,12 @@ function runRace(arr,trackImg){
     img.src=images[idx]; img.loading="eager";
     img.style.width=(trackHeight*0.65)+"px";
 
-    const rankEl=document.createElement('span');
-    rankEl.className='rank'; rankEl.textContent='';
-    rankEl.style.fontSize=(trackHeight*0.3)+"px";
-
-    runner.appendChild(img); runner.appendChild(rankEl);
+    const rankEl = document.createElement('span');
+    rankEl.className = 'rank';
+    rankEl.textContent = "0위"; // ✅ 자리 확보용 (투명 처리)
+    rankEl.style.fontSize = (trackHeight * 0.3) + "px";
+    runner.appendChild(img);
+    runner.appendChild(rankEl);
     raceContainer.appendChild(runner);
 
     const totalFrames=Math.random()*120+300; // ✅ 5~7초
@@ -134,11 +135,15 @@ function runRace(arr,trackImg){
       runner.x+=runner.speed; runner.progress=runner.x/trackWidth;
       runner.el.style.transform=`translate(${runner.x}px, ${wobble}px)`;
 
-      if(runner.x>=trackWidth){
+      if (runner.x >= trackWidth) {
         finishOrder.push(runner);
         runner.el.classList.add('jump');
-        runner.el.querySelector('.rank').textContent=`${finishOrder.length}위`;
-        if(finishOrder.length===arr.length)showResult(finishOrder);
+
+        const rank = runner.el.querySelector('.rank');
+        rank.style.color = "#333"; // ✅ 도착 후 색상 표시
+        rank.textContent = `${finishOrder.length}위`;
+
+        if (finishOrder.length === arr.length) showResult(finishOrder);
       }
     });
     if(finishOrder.length<runners.length)requestAnimationFrame(animate);
