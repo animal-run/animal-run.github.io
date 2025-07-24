@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">  <!-- 모바일 대응 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>동물 달리기 추첨기</title>
   <style>
     html, body {
@@ -21,7 +21,7 @@
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));  /* 반응형 컬럼 */
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
       gap: 10px;
       width: 100%;
       max-width: 600px;
@@ -89,7 +89,7 @@
       will-change: transform;
     }
     .runner img {
-      width: 40px;  /* 모바일 축소 */
+      width: 40px;
       margin-right: 8px;
     }
     .runner .rank {
@@ -129,7 +129,7 @@
     const images = animalNames.map((_, i) => `./images/animal${i+1}.png`);
     let selected = [];
 
-    // 이미지+이름 로드 및 선택 기능
+    // 동물 이미지와 선택 기능
     images.forEach((src, idx) => {
       const wrapper = document.createElement('div');
       wrapper.className = 'item';
@@ -155,7 +155,6 @@
       startBtn.disabled = selected.length < 2 || selected.length > 10;
     }
 
-    // 경주 시작
     startBtn.addEventListener('click', () => {
       const trackBgList = ['background-track.png', 'background-sand.png', 'background-savannah.png'];
       raceContainer.style.background = `url('./images/${trackBgList[Math.floor(Math.random()*trackBgList.length)]}') repeat-x bottom`;
@@ -168,8 +167,11 @@
       runRace(selected);
     });
 
+    // 프레임 단위 경주 애니메이션
     function runRace(arr) {
+      raceContainer.innerHTML = "";
       const trackWidth = raceContainer.clientWidth - 60;
+      const runners = [];
       const finishOrder = [];
 
       arr.forEach((idx, i) => {
@@ -181,23 +183,49 @@
         runner.appendChild(img);
         raceContainer.appendChild(runner);
 
-        const duration = Math.random() * 3000 + 3000;
-        runner.style.transition = `transform ${duration}ms linear`;
-        requestAnimationFrame(() => runner.style.transform = `translateX(${trackWidth}px)`);
-
-        runner.addEventListener('transitionend', () => {
-          finishOrder.push({ idx, runner });
-          const rankEl = document.createElement('span');
-          rankEl.className = 'rank';
-          rankEl.textContent = `${finishOrder.length}위`;
-          runner.appendChild(rankEl);
-
-          if (finishOrder.length === arr.length) {
-            const last = finishOrder[finishOrder.length - 1];
-            resultDiv.textContent = `🎉 당첨(꼴등): ${animalNames[last.idx]}`;
-          }
+        runners.push({
+          idx,
+          el: runner,
+          x: 0,
+          speed: Math.random() * 1.5 + 1,      // 초기 속도
+          accel: Math.random() * 0.05 - 0.025, // 가속/감속
+          maxSpeed: Math.random() * 3 + 2      // 최고 속도
         });
       });
+
+      function animate() {
+        runners.forEach(runner => {
+          if (finishOrder.includes(runner)) return;
+
+          // 속도 변화
+          runner.speed += runner.accel;
+          if (runner.speed > runner.maxSpeed) runner.speed = runner.maxSpeed;
+          if (runner.speed < 0.5) runner.speed = 0.5;
+
+          runner.x += runner.speed;
+          runner.el.style.transform = `translateX(${runner.x}px)`;
+
+          // 결승선 도달
+          if (runner.x >= trackWidth) {
+            finishOrder.push(runner);
+            const rankEl = document.createElement('span');
+            rankEl.className = 'rank';
+            rankEl.textContent = `${finishOrder.length}위`;
+            runner.el.appendChild(rankEl);
+
+            if (finishOrder.length === arr.length) {
+              const last = finishOrder[finishOrder.length - 1];
+              resultDiv.textContent = `🎉 당첨(꼴등): ${animalNames[last.idx]}`;
+            }
+          }
+        });
+
+        if (finishOrder.length < arr.length) {
+          requestAnimationFrame(animate);
+        }
+      }
+
+      requestAnimationFrame(animate);
     }
   </script>
 </body>
