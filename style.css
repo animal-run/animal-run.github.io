@@ -105,13 +105,11 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   position: absolute;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* ✅ 캐릭터-순위 양 끝 배치 */
-  width: 100%;                    /* ✅ 트랙 폭 내부에 고정 */
   box-sizing: border-box;
-  padding: 0 10px;
   will-change: transform;
   transition: transform 0.1s ease-out;
   z-index: 1;
+  padding-left: 8px;
 }
 .runner img {
   transition: transform 0.2s ease-in-out;
@@ -120,10 +118,11 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   animation: jump 0.4s ease-out;
 }
 .rank {
-  color: transparent;    /* ✅ 처음엔 투명 */
-  min-width: 45px;       /* ✅ 순위 공간 확보 */
-  text-align: right;
+  margin-left: 8px;       /* ✅ 캐릭터 오른쪽 여백 */
+  color: transparent;     /* ✅ 초반엔 투명 */
+  min-width: 35px;        /* ✅ 순위 공간 확보 */
   font-weight: bold;
+  text-align: left;       /* ✅ 캐릭터 옆이라 왼쪽 정렬 */
 }
 @keyframes jump {
   0% { transform: translateY(0); }
