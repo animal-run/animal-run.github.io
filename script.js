@@ -48,7 +48,7 @@ function updateCountOptions(){
 }
 
 startBtn.addEventListener('click',()=>{
-  const trackBgList=['background-track.png','background-sand.png','background-savannah.png'];
+  const trackBgList=['background-track.webp','background-sand.webp','background-savannah.webp'];
   const trackImg=trackBgList[Math.floor(Math.random()*trackBgList.length)];
   raceContainer.style.background=
     trackImg.includes('sand')||trackImg.includes('savannah')
