@@ -11,6 +11,7 @@ body {
   align-items: center;
   padding: 10px;
   box-sizing: border-box;
+  background: #f7f7f7;
 }
 h1 {
   font-size: 1.8rem;
@@ -23,7 +24,6 @@ h1 {
   width: 100%;
   max-width: 600px;
   backdrop-filter: blur(4px);
-  background: rgba(255,255,255,0.8);
   padding: 10px;
   border-radius: 8px;
   box-sizing: border-box;
@@ -79,17 +79,19 @@ button {
 }
 button:hover:not(:disabled) { background: #45a049; }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
+
 #race-container {
   position: relative;
   width: 100%;
   max-width: 600px;
-  margin: 10px auto;
+  margin: 10px auto 40px auto; /* ✅ 아래 여백 추가 */
   overflow: visible;
   border-top: 2px solid #ccc;
   border-bottom: 2px solid #ccc;
   background: none;
   border-radius: 8px;
   box-sizing: border-box;
+  max-height: 80vh; /* ✅ 모바일 세로에서 화면 초과 방지 */
 }
 .track {
   position: absolute;
@@ -141,4 +143,6 @@ footer {
   font-size: 0.8rem;
   color: #666;
   border-top: 1px solid #ddd;
+  width: 100%;
+  max-width: 600px;
 }
