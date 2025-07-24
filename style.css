@@ -11,7 +11,6 @@ body {
   align-items: center;
   padding: 10px;
   box-sizing: border-box;
-  background: #f7f7f7;
 }
 h1 {
   font-size: 1.8rem;
@@ -24,6 +23,7 @@ h1 {
   width: 100%;
   max-width: 600px;
   backdrop-filter: blur(4px);
+  background: rgba(255,255,255,0.8);
   padding: 10px;
   border-radius: 8px;
   box-sizing: border-box;
@@ -84,14 +84,14 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   position: relative;
   width: 100%;
   max-width: 600px;
-  margin: 10px auto 40px auto; /* ✅ 아래 여백 추가 */
+  margin: 10px auto 40px auto;
   overflow: visible;
   border-top: 2px solid #ccc;
   border-bottom: 2px solid #ccc;
   background: none;
   border-radius: 8px;
   box-sizing: border-box;
-  max-height: 80vh; /* ✅ 모바일 세로에서 화면 초과 방지 */
+  max-height: 80vh;
 }
 .track {
   position: absolute;
@@ -105,24 +105,25 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   position: absolute;
   display: flex;
   align-items: center;
-  padding-left: 8px;
-  padding-right: 45px;
+  justify-content: space-between; /* ✅ 캐릭터-순위 양 끝 배치 */
+  width: 100%;                    /* ✅ 트랙 폭 내부에 고정 */
+  box-sizing: border-box;
+  padding: 0 10px;
   will-change: transform;
   transition: transform 0.1s ease-out;
   z-index: 1;
-  box-sizing: border-box;
 }
-.runner img { transition: transform 0.2s ease-in-out; }
-.runner.jump img { animation: jump 0.4s ease-out; }
+.runner img {
+  transition: transform 0.2s ease-in-out;
+}
+.runner.jump img {
+  animation: jump 0.4s ease-out;
+}
 .rank {
-  position: absolute;
-  right: 5px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-weight: bold;
-  color: transparent;   /* ✅ 처음엔 투명 (자리 확보용) */
+  color: transparent;    /* ✅ 처음엔 투명 */
+  min-width: 45px;       /* ✅ 순위 공간 확보 */
   text-align: right;
-  min-width: 45px;      /* ✅ 순위 표시 폭 넉넉히 */
+  font-weight: bold;
 }
 @keyframes jump {
   0% { transform: translateY(0); }
@@ -136,6 +137,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   color: #333;
   text-shadow: 1px 1px 2px rgba(255,255,255,0.7);
   word-break: keep-all;
+  min-height: 60px; /* ✅ 결과 공간 확보 */
 }
 footer {
   margin-top: 30px;
