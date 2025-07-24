@@ -87,68 +87,41 @@ function runRace(arr, trackImg) {
 
     const rankEl = document.createElement('span');
     rankEl.className = 'rank';
-    rankEl.textContent = "0위"; // 공간 확보용
+    rankEl.textContent = "0위";
     rankEl.style.fontSize = (trackHeight * 0.3) + "px";
 
     runner.appendChild(img);
     runner.appendChild(rankEl);
     raceContainer.appendChild(runner);
 
-    // ✅ 초기 속도 편차: 초반부터 확실히 격차 발생
+    // ✅ baseSpeed를 크게 분산 (초반부터 큰 속도 차 유지)
     let totalFrames;
     const randomType = Math.random();
     if (randomType < 0.2) {
-      totalFrames = Math.random() * 20 + 500; // 빠른 그룹
+      totalFrames = Math.random() * 60 + 420; // 빠른 그룹
     } else if (randomType < 0.8) {
-      totalFrames = Math.random() * 60 + 530; // 보통 그룹
+      totalFrames = Math.random() * 100 + 500; // 보통
     } else {
-      totalFrames = Math.random() * 20 + 600; // 느린 그룹
+      totalFrames = Math.random() * 80 + 620; // 느린 그룹
     }
-
     const baseSpeed = trackWidth / totalFrames;
 
-    // ✅ 속도 변동 이벤트 (1~2회)
-    const changeFrames = [];
-    const changeCount = Math.floor(Math.random() * 2) + 1; // 1~2회
-    while (changeFrames.length < changeCount) {
-      const f = Math.floor(Math.random() * totalFrames * 0.9);
-      if (!changeFrames.includes(f)) changeFrames.push(f);
-    }
-    changeFrames.sort((a, b) => a - b);
     runners.push({
       idx, el: runner, x: 0, progress: 0,
-      baseSpeed, speed: baseSpeed, changeFrames, frame: 0
+      baseSpeed, speed: baseSpeed, frame: 0
     });
   });
 
   function animate() {
-    const minX = Math.min(...runners.map(r => r.x));
-    const maxX = Math.max(...runners.map(r => r.x));
-
     runners.forEach(runner => {
       if (finishOrder.includes(runner)) return;
       runner.frame++;
 
-      let speedFactor = 1;
-
-      // ✅ 선두/후발 보정은 후반부에서만 작동
-      if (runner.progress > 0.4) {
-        // 선두(앞 그룹)
-        if (runner.x === maxX && Math.random() < 0.35) {
-          speedFactor = Math.random() * 0.3 + 0.7; // 0.7~1.0배
-        }
-        // 후발주자(뒤 그룹)
-        else if (runner.x === minX && Math.random() < 0.55) {
-          speedFactor = Math.random() * 1.0 + 2.0; // 2.0~3.0배
-        }
+      // ✅ 계속 속도 변동 (초반부터 후반까지 유지)
+      if (Math.random() < 0.05) {
+        const fluctuation = Math.random() * 0.4 + 0.8; // 0.8~1.2배
+        runner.speed = runner.baseSpeed * fluctuation;
       }
-
-      // ✅ 일반 속도 변동 (최소화)
-      else if (runner.changeFrames.includes(runner.frame)) {
-        speedFactor = Math.random() * 0.3 + 0.9; // 0.9~1.2배
-      }
-
-      runner.speed = runner.baseSpeed * speedFactor;
 
       const wobble = Math.sin(runner.frame / 5) * 2;
       runner.x += runner.speed;
