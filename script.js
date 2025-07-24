@@ -12,7 +12,7 @@ const countSelect=document.getElementById('count');
 const images=animalNames.map((_,i)=>`./images/animal${i+1}.png`);
 let selected=[],runners=[],trackWidth=0,trackHeight=60;
 
-// ✅ 사전 로딩
+// ✅ 이미지 사전 로딩
 const bgList=['./images/background-track.webp','./images/background-sand.webp','./images/background-savannah.webp'];
 [...images,...bgList].forEach(src=>{const img=new Image();img.src=src;});
 
@@ -60,13 +60,13 @@ startBtn.addEventListener('click',()=>{
   grid.style.display='none'; startBtn.style.display='none'; optionsDiv.style.display='none';
   raceContainer.style.display='block';
 
-  trackHeight=Math.max(40,Math.min(window.innerWidth*0.15,60)); // ✅ 모바일 UX 개선
+  trackHeight=Math.max(40,Math.min(window.innerWidth*0.15,60));
   raceContainer.style.height=`${selected.length*trackHeight}px`;
   runRace(selected,trackImg);
 });
 
 function runRace(arr,trackImg){
-  raceContainer.innerHTML=""; resultDiv.textContent="";
+  raceContainer.innerHTML=""; resultDiv.textContent=" ";
   trackWidth=raceContainer.clientWidth-60; runners=[]; const finishOrder=[];
 
   arr.forEach((idx,i)=>{
@@ -85,15 +85,16 @@ function runRace(arr,trackImg){
     img.src=images[idx]; img.loading="eager";
     img.style.width=(trackHeight*0.65)+"px";
 
-    const rankEl = document.createElement('span');
-    rankEl.className = 'rank';
-    rankEl.textContent = "0위"; // ✅ 자리 확보용 (투명 처리)
-    rankEl.style.fontSize = (trackHeight * 0.3) + "px";
+    const rankEl=document.createElement('span');
+    rankEl.className='rank';
+    rankEl.textContent="0위"; // ✅ 자리 확보
+    rankEl.style.fontSize=(trackHeight*0.3)+"px";
+
     runner.appendChild(img);
     runner.appendChild(rankEl);
     raceContainer.appendChild(runner);
 
-    const totalFrames=Math.random()*120+300; // ✅ 5~7초
+    const totalFrames=Math.random()*120+300;
     const baseSpeed=trackWidth/totalFrames;
     const changeFrames=[];
     while(changeFrames.length<3){
@@ -117,7 +118,7 @@ function runRace(arr,trackImg){
       let speedFactor=1;
 
       if(runner.progress>0.9){
-        speedFactor=Math.random()*0.4+1.0; // ✅ 결승 직전 가속
+        speedFactor=Math.random()*0.4+1.0;
       }else if(runner.progress>0.7 && Math.random()<0.2){
         speedFactor=Math.random()*0.9+0.7;
       }else if(runner.changeFrames.includes(runner.frame)){
@@ -126,7 +127,6 @@ function runRace(arr,trackImg){
       }
 
       runner.speed=runner.baseSpeed*speedFactor;
-
       if(runner.x===minX && Math.random()<0.2){
         runner.speed*=Math.random()*0.4+1.1;
       }
@@ -135,15 +135,15 @@ function runRace(arr,trackImg){
       runner.x+=runner.speed; runner.progress=runner.x/trackWidth;
       runner.el.style.transform=`translate(${runner.x}px, ${wobble}px)`;
 
-      if (runner.x >= trackWidth) {
+      if(runner.x>=trackWidth){
         finishOrder.push(runner);
         runner.el.classList.add('jump');
 
-        const rank = runner.el.querySelector('.rank');
-        rank.style.color = "#333"; // ✅ 도착 후 색상 표시
-        rank.textContent = `${finishOrder.length}위`;
+        const rank=runner.el.querySelector('.rank');
+        rank.style.color="#333"; // ✅ 도착 후만 보이게
+        rank.textContent=`${finishOrder.length}위`;
 
-        if (finishOrder.length === arr.length) showResult(finishOrder);
+        if(finishOrder.length===arr.length)showResult(finishOrder);
       }
     });
     if(finishOrder.length<runners.length)requestAnimationFrame(animate);
@@ -164,7 +164,7 @@ function showResult(order){
 function resetGame(){
   raceContainer.style.display="none"; grid.style.display="grid";
   optionsDiv.style.display="flex"; startBtn.style.display="block";
-  resultDiv.textContent=""; selected=[];
+  resultDiv.textContent=" "; selected=[];
   document.querySelectorAll('.item img').forEach(img=>img.classList.remove('selected'));
   startBtn.disabled=true; modeSelect.value="win"; updateCountOptions();
 }
@@ -172,7 +172,7 @@ function resetGame(){
 window.addEventListener("resize",()=>{
   if(!runners.length)return;
   trackWidth=raceContainer.clientWidth-60;
-  trackHeight=Math.max(40,Math.min(window.innerWidth*0.15,60)); // ✅ 범위 제한
+  trackHeight=Math.max(40,Math.min(window.innerWidth*0.15,60));
   raceContainer.style.height=`${selected.length*trackHeight}px`;
   runners.forEach((runner,i)=>{
     runner.x=runner.progress*trackWidth;
