@@ -120,9 +120,9 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   top: 50%;
   transform: translateY(-50%);
   font-weight: bold;
-  color: #333;
+  color: transparent;   /* ✅ 처음엔 투명 (자리 확보용) */
   text-align: right;
-  min-width: 35px;
+  min-width: 45px;      /* ✅ 순위 표시 폭 넉넉히 */
 }
 @keyframes jump {
   0% { transform: translateY(0); }
