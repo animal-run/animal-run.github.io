@@ -1,38 +1,58 @@
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
 }
+
 body {
   font-family: sans-serif;
+  max-height: 100vh;
+  overflow: hidden;
   text-align: center;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   padding: 10px;
   box-sizing: border-box;
+  background: #fff;
 }
+
 h1 {
   font-size: 1.8rem;
   margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
 }
+
+h1 img {
+  height: 1.5rem;
+  vertical-align: middle;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  justify-items: center;
+  justify-content: center;
   gap: 10px;
   width: 100%;
   max-width: 600px;
   backdrop-filter: blur(4px);
-  background: rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.8);
   padding: 10px;
   border-radius: 8px;
   box-sizing: border-box;
 }
+
 .item {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
 .item img {
   width: 100%;
   cursor: pointer;
@@ -40,29 +60,38 @@ h1 {
   border-radius: 8px;
   transition: transform .2s;
 }
-.item img:hover { transform: scale(1.05); }
+
+.item img:hover {
+  transform: scale(1.05);
+}
+
 .item img.selected {
   border-color: #4caf50;
-  box-shadow: 0 0 10px rgba(76,175,80,0.5);
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
 }
+
 .caption {
   margin-top: 6px;
   font-size: 0.9rem;
 }
+
 .options {
-  margin: 10px 0;
+  margin: 15px 0 10px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
 }
+
 select {
   padding: 6px;
   font-size: 0.9rem;
   border: 1px solid #ccc;
   border-radius: 4px;
   width: 150px;
+  text-align: center;
 }
+
 button {
   padding: 12px 20px;
   font-size: 1rem;
@@ -72,72 +101,109 @@ button {
   color: white;
   border: none;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: background .2s;
   width: 90%;
   max-width: 300px;
 }
-button:hover:not(:disabled) { background: #45a049; }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+button:hover:not(:disabled) {
+  background: #45a049;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 #race-container {
   position: relative;
   width: 100%;
   max-width: 600px;
-  margin: 10px auto 40px auto;
-  overflow: visible;
+  margin: 10px auto;
+  overflow: hidden;
   border-top: 2px solid #ccc;
   border-bottom: 2px solid #ccc;
-  background: none;
+  background-repeat: repeat-x;
+  background-size: cover;
   border-radius: 8px;
+  padding-bottom: 10px;
+  /* ✅ 마지막 캐릭터 여유 공간 */
   box-sizing: border-box;
-  max-height: 80vh;
 }
+
+/* ✅ 캐릭터별 개별 트랙 */
 .track {
   position: absolute;
   left: 0;
   width: 100%;
   background-repeat: repeat-x;
-  background-position: left center;
-  border-bottom: 1px solid rgba(0,0,0,0.2);
+  background-position: 0 center;
+  background-size: auto 100%;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 }
+
+.track:last-child {
+  border-bottom: none;
+  /* 마지막 트랙은 선 제거 */
+}
+
 .runner {
   position: absolute;
   display: flex;
   align-items: center;
-  box-sizing: border-box;
+  padding-left: 8px;
   will-change: transform;
   transition: transform 0.1s ease-out;
-  z-index: 1;
-  padding-left: 8px;
+  box-sizing: border-box;
 }
+
 .runner img {
+  max-width: 12vw;
+  min-width: 30px;
   transition: transform 0.2s ease-in-out;
 }
+
 .runner.jump img {
   animation: jump 0.4s ease-out;
 }
+
 .rank {
-  margin-left: 8px;       /* ✅ 캐릭터 오른쪽 여백 */
-  color: transparent;     /* ✅ 초반엔 투명 */
-  min-width: 35px;        /* ✅ 순위 공간 확보 */
+  position: absolute;
+  left: -30px;        /* ✅ 동물 왼쪽으로 이동 */
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
   font-weight: bold;
-  text-align: left;       /* ✅ 캐릭터 옆이라 왼쪽 정렬 */
+  text-align: right;
+  min-width: 30px;    /* ✅ 공간 확보 */
+  opacity: 0;         /* ✅ 완주 전에는 숨김 */
 }
+
 @keyframes jump {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0); }
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
 }
+
 #result {
   margin-top: 20px;
   font-size: 1.3rem;
   font-weight: bold;
   color: #333;
-  text-shadow: 1px 1px 2px rgba(255,255,255,0.7);
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7);
   word-break: keep-all;
-  min-height: 60px; /* ✅ 결과 공간 확보 */
+  min-height: 60px;
 }
+
 footer {
   margin-top: 30px;
   padding: 10px 0;
@@ -146,4 +212,19 @@ footer {
   border-top: 1px solid #ddd;
   width: 100%;
   max-width: 600px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  }
+
+  button {
+    font-size: 0.9rem;
+  }
 }

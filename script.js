@@ -12,7 +12,7 @@ const countSelect = document.getElementById('count');
 const images = animalNames.map((_, i) => `./images/animal${i + 1}.png`);
 let selected = [], runners = [], trackWidth = 0, trackHeight = 60;
 
-// ✅ 이미지 사전 로딩
+// ✅ 이미지 사전 로딩 (배경 포함)
 const bgList = ['./images/background-track.webp', './images/background-sand.webp', './images/background-savannah.webp'];
 [...images, ...bgList].forEach(src => { const img = new Image(); img.src = src; });
 
@@ -45,8 +45,7 @@ function updateCountOptions() {
   const maxCount = selected.length || 1;
   for (let i = 1; i <= maxCount; i++) {
     const opt = document.createElement("option");
-    opt.value = i; opt.textContent = i + "명";
-    countSelect.appendChild(opt);
+    opt.value = i; opt.textContent = i + "명"; countSelect.appendChild(opt);
   }
   countSelect.value = 1;
 }
@@ -56,13 +55,13 @@ startBtn.addEventListener('click', () => {
   const trackImg = trackBgList[Math.floor(Math.random() * trackBgList.length)];
   raceContainer.style.background =
     trackImg.includes('sand') || trackImg.includes('savannah')
-      ? `url('./images/${trackImg}') center/cover no-repeat` : 'none';
+      ? `url('./images/${trackImg}') repeat-x center/auto 100%`
+      : `url('./images/${trackImg}') repeat-x center/auto 100%`;
 
   grid.style.display = 'none'; startBtn.style.display = 'none'; optionsDiv.style.display = 'none';
   raceContainer.style.display = 'block';
 
-  trackHeight = Math.max(40, Math.min(window.innerWidth * 0.15, 60));
-  raceContainer.style.height = `${selected.length * trackHeight}px`;
+  adjustLayout(); // ✅ 시작 시 즉시 레이아웃 조정
   runRace(selected, trackImg);
 });
 
@@ -72,10 +71,11 @@ function runRace(arr, trackImg) {
 
   arr.forEach((idx, i) => {
     const track = document.createElement('div');
-    track.className = 'track'; track.style.top = `${i * trackHeight}px`;
+    track.className = 'track';
+    track.style.top = `${i * trackHeight}px`;
     track.style.height = trackHeight + "px";
+    track.style.backgroundImage = `url('./images/${trackImg}')`; // ✅ 각 트랙에 개별 적용
     if (i === arr.length - 1) track.style.borderBottom = "none";
-    track.style.backgroundImage = trackImg.includes('track') ? `url('./images/${trackImg}')` : 'none';
     raceContainer.appendChild(track);
 
     const runner = document.createElement('div');
@@ -88,44 +88,92 @@ function runRace(arr, trackImg) {
 
     const rankEl = document.createElement('span');
     rankEl.className = 'rank';
-    rankEl.textContent = "0위";
+    rankEl.textContent = "0위"; // 공간 확보용
     rankEl.style.fontSize = (trackHeight * 0.3) + "px";
-
+    rankEl.style.opacity = 0;    // ✅ 초기 숨김
     runner.appendChild(img);
     runner.appendChild(rankEl);
     raceContainer.appendChild(runner);
 
-    // ✅ baseSpeed 분산 (초반 격차 발생)
-    const totalFrames = Math.random() * 100 + 450; 
+    // ✅ 초기 속도 편차
+    let totalFrames;
+    const randomType = Math.random();
+    if (randomType < 0.2) {
+      totalFrames = Math.random() * 20 + 380; // 선두 그룹 (7~8초)
+    } else if (randomType < 0.8) {
+      totalFrames = Math.random() * 70 + 420; // 보통 그룹
+    } else {
+      totalFrames = Math.random() * 50 + 470; // 느린 그룹
+    }
     const baseSpeed = trackWidth / totalFrames;
+
+    // ✅ 속도 변동: 후반부 중심 (역전 포인트)
+    const changeFrames = [];
+    const changeCount = Math.floor(Math.random() * 2) + 5; // 2~3번 변화
+    while (changeFrames.length < changeCount) {
+      const f = Math.floor(Math.random() * totalFrames * 0.95);
+      if (!changeFrames.includes(f)) changeFrames.push(f);
+    }
+    changeFrames.sort((a, b) => a - b);
 
     runners.push({
       idx, el: runner, x: 0, progress: 0,
-      baseSpeed, speed: baseSpeed, frame: 0
+      baseSpeed, speed: baseSpeed, changeFrames, frame: 0
     });
   });
 
+  // ✅ 배경 이동(긴박감)
+  let bgOffset = 0;
+
+
   function animate() {
+    // ✅ 배경 반복 이동
+    bgOffset -= 2; // 속도 (1~3 사이 값으로 조절 가능)
+    document.querySelectorAll('.track').forEach(track => {
+      track.style.backgroundPosition = `${bgOffset}px center`;
+    });
+
+    const minX = Math.min(...runners.map(r => r.x));
+    const maxX = Math.max(...runners.map(r => r.x));
+
     runners.forEach(runner => {
       if (finishOrder.includes(runner)) return;
       runner.frame++;
 
-      // ✅ 역전 빈번: 전 구간 20% 확률, 0.5~2.0배 속도 변동
-      if (Math.random() < 0.2) {
-        const fluctuation = Math.random() * 1.5 + 0.5;
-        runner.speed = runner.baseSpeed * fluctuation;
-      }
+      let speedFactor = 1;
 
-      const wobble = Math.sin(runner.frame / 5) * 2;
+      if (runner.progress > 0.5) {
+        // 선두는 40% 확률로 느려짐
+        if (runner.x === maxX && Math.random() < 0.4) {
+          speedFactor = Math.random() * 0.3 + 0.7; // 0.7~1.0배
+        }
+        // 후발은 50% 확률로 폭발적 가속
+        else if (runner.x === minX && Math.random() < 0.5) {
+          speedFactor = Math.random() * 1.2 + 1.2; // 1.2~2.4배
+        }
+        // 중간권도 등락 (30% 확률)
+        else if (Math.random() < 0.3) {
+          // 일부는 느려지고 일부는 빨라짐
+          speedFactor = Math.random() < 0.5
+            ? Math.random() * 0.4 + 0.8  // 0.8~1.2배
+            : Math.random() * 0.8 + 1.0; // 1.0~1.8배
+        }
+      }// ✅ 일반 변동 (초반~중반 랜덤 등락)
+      else if (runner.changeFrames.includes(runner.frame)) {
+        speedFactor = Math.random() < 0.5
+          ? Math.random() * 0.4 + 0.8  // 0.8~1.2배
+          : Math.random() * 0.5 + 1.0; // 1.0~1.5배
+      }
+      runner.speed = runner.baseSpeed * speedFactor;
       runner.x += runner.speed;
       runner.progress = runner.x / trackWidth;
-      runner.el.style.transform = `translate(${runner.x}px, ${wobble}px)`;
+      runner.el.style.transform = `translate(${runner.x}px,${Math.sin(runner.frame / 5) * 2}px)`;
 
       if (runner.x >= trackWidth) {
         finishOrder.push(runner);
-        runner.el.style.transform = `translate(${trackWidth}px,0)`;
+        runner.el.classList.add('jump');
         const rank = runner.el.querySelector('.rank');
-        rank.style.color = "#333";
+        rank.style.opacity = 1;          // ✅ 완주 시 표시
         rank.textContent = `${finishOrder.length}위`;
         if (finishOrder.length === runners.length) showResult(finishOrder);
       }
@@ -155,19 +203,19 @@ function resetGame() {
   startBtn.disabled = true; modeSelect.value = "win"; updateCountOptions();
 }
 
-window.addEventListener("resize", () => {
-  if (!runners.length) return;
-  trackWidth = raceContainer.clientWidth - 60;
-  trackHeight = Math.max(40, Math.min(window.innerWidth * 0.15, 60));
+function adjustLayout() {
+  if (!selected.length) return;
+  const screenH = window.innerHeight;
+  const availableH = screenH - document.querySelector('h1').offsetHeight - 120;
+  trackHeight = Math.max(40, Math.min((availableH / selected.length), window.innerWidth * 0.15, 60));
   raceContainer.style.height = `${selected.length * trackHeight}px`;
   runners.forEach((runner, i) => {
-    runner.x = runner.progress * trackWidth;
-    runner.el.style.transform = `translate(${runner.x}px,0)`;
     runner.el.style.top = `${i * trackHeight}px`;
     runner.el.style.height = trackHeight + "px";
     runner.el.querySelector("img").style.width = (trackHeight * 0.65) + "px";
     runner.el.querySelector(".rank").style.fontSize = (trackHeight * 0.3) + "px";
   });
-});
+}
 
+window.addEventListener("resize", adjustLayout);
 updateCountOptions();
