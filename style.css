@@ -1,13 +1,16 @@
 html,
 body {
-  height: 100%;
   margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  /* ✅ 항상 한 화면에 고정 */
+  overflow: hidden;
+  /* ✅ 스크롤 제거 */
 }
 
 body {
   font-family: sans-serif;
-  max-height: 100vh;
-  overflow: hidden;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -120,6 +123,8 @@ button:disabled {
   position: relative;
   width: 100%;
   max-width: 600px;
+  flex: 1;
+  /* ✅ 남은 모든 공간 차지 */
   margin: 10px auto;
   overflow: hidden;
   border-top: 2px solid #ccc;
@@ -127,8 +132,7 @@ button:disabled {
   background-repeat: repeat-x;
   background-size: cover;
   border-radius: 8px;
-  padding-bottom: 10px;
-  /* ✅ 마지막 캐릭터 여유 공간 */
+  padding-bottom: 0;
   box-sizing: border-box;
 }
 
@@ -145,7 +149,6 @@ button:disabled {
 
 .track:last-child {
   border-bottom: none;
-  /* 마지막 트랙은 선 제거 */
 }
 
 .runner {
@@ -170,14 +173,15 @@ button:disabled {
 
 .rank {
   position: absolute;
-  left: -30px;        /* ✅ 동물 왼쪽으로 이동 */
+  left: -35px;
   top: 50%;
   transform: translateY(-50%);
   color: #fff;
   font-weight: bold;
   text-align: right;
-  min-width: 30px;    /* ✅ 공간 확보 */
-  opacity: 0;         /* ✅ 완주 전에는 숨김 */
+  min-width: 35px;
+  opacity: 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 @keyframes jump {
@@ -194,25 +198,64 @@ button:disabled {
   }
 }
 
-#result {
-  margin-top: 20px;
-  font-size: 1.3rem;
+#result-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  font-size: 1.4rem;
   font-weight: bold;
   color: #333;
-  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7);
-  word-break: keep-all;
-  min-height: 60px;
+  z-index: 100;
+  border-radius: 8px;
+}
+
+#result-overlay button {
+  margin-top: 10px;
+  padding: 10px 18px;
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#result-overlay button:hover {
+  background: #45a049;
 }
 
 footer {
-  margin-top: 30px;
-  padding: 10px 0;
+  margin-top: 5px;
+  padding: 5px 0;
   font-size: 0.8rem;
   color: #666;
   border-top: 1px solid #ddd;
   width: 100%;
   max-width: 600px;
   text-align: center;
+  flex-shrink: 0;
+}
+
+.boost-icon {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translate(10px, -50%) scale(0.8);
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  animation: boost-flash 0.5s ease-out;
+}
+
+@keyframes boost-flash {
+  0%   { opacity: 1; transform: translate(10px, -50%) scale(1.2); }
+  100% { opacity: 0; transform: translate(10px, -50%) scale(0.8); }
 }
 
 @media (max-width: 480px) {

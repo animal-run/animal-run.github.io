@@ -53,10 +53,10 @@ function updateCountOptions() {
 startBtn.addEventListener('click', () => {
   const trackBgList = ['background-track.webp', 'background-sand.webp', 'background-savannah.webp'];
   const trackImg = trackBgList[Math.floor(Math.random() * trackBgList.length)];
-  raceContainer.style.background =
-    trackImg.includes('sand') || trackImg.includes('savannah')
-      ? `url('./images/${trackImg}') repeat-x center/auto 100%`
-      : `url('./images/${trackImg}') repeat-x center/auto 100%`;
+  // raceContainer.style.background =
+  //   trackImg.includes('sand') || trackImg.includes('savannah')
+  //     ? `url('./images/${trackImg}') repeat-x center/auto 100%`
+  //     : `url('./images/${trackImg}') repeat-x center/auto 100%`;
 
   grid.style.display = 'none'; startBtn.style.display = 'none'; optionsDiv.style.display = 'none';
   raceContainer.style.display = 'block';
@@ -142,28 +142,49 @@ function runRace(arr, trackImg) {
 
       let speedFactor = 1;
 
-      if (runner.progress > 0.5) {
-        // 선두는 40% 확률로 느려짐
-        if (runner.x === maxX && Math.random() < 0.4) {
-          speedFactor = Math.random() * 0.3 + 0.7; // 0.7~1.0배
+      // animate() 내부 부스터 로직
+      if (runner.progress > 0.7) {
+        // 선두 감속 (최대 2회, 40% 확률)
+        if (runner.x === maxX && (runner.slowCount || 0) < 2 && Math.random() < 0.4) {
+          speedFactor = Math.random() * 0.35 + 0.5;   // 0.5~0.85× (더 확실히 느려짐)
+          runner.slowCount = (runner.slowCount || 0) + 1;
         }
-        // 후발은 50% 확률로 폭발적 가속
-        else if (runner.x === minX && Math.random() < 0.5) {
-          speedFactor = Math.random() * 1.2 + 1.2; // 1.2~2.4배
+        // 후발 부스터 (최대 2회, 50% 확률)
+        else if (runner.x === minX && (runner.boostCount || 0) < 2 && Math.random() < 0.5) {
+          speedFactor = Math.random() * 2.0 + 2.0;   // 2.0~4.0× (훨씬 빠르게)
+          runner.boostCount = (runner.boostCount || 0) + 1;
+
+          // 번개 아이콘
+          const icon = document.createElement('img');
+          icon.src = './images/bolt.png';
+          icon.className = 'boost-icon';
+          runner.el.appendChild(icon);
+          setTimeout(() => icon.remove(), 500);
+
+          // ✅ 부스터 유지 시간: 다음 20프레임 동안 1.5× 유지
+          runner.boostFrames = 200;
         }
-        // 중간권도 등락 (30% 확률)
+        // 중간권 소폭 변동
         else if (Math.random() < 0.3) {
-          // 일부는 느려지고 일부는 빨라짐
           speedFactor = Math.random() < 0.5
-            ? Math.random() * 0.4 + 0.8  // 0.8~1.2배
-            : Math.random() * 0.8 + 1.0; // 1.0~1.8배
+            ? Math.random() * 0.2 + 0.9
+            : Math.random() * 0.3 + 1.0;
         }
-      }// ✅ 일반 변동 (초반~중반 랜덤 등락)
+      }
+
+      // 부스터 지속 처리
+      if (runner.boostFrames > 0) {
+        speedFactor *= 2.5;       // 추가 1.5×
+        runner.boostFrames--;
+      }
+
+      // 기존 changeFrames 이벤트
       else if (runner.changeFrames.includes(runner.frame)) {
         speedFactor = Math.random() < 0.5
-          ? Math.random() * 0.4 + 0.8  // 0.8~1.2배
-          : Math.random() * 0.5 + 1.0; // 1.0~1.5배
+          ? Math.random() * 0.3 + 0.9
+          : Math.random() * 0.2 + 1.0;
       }
+
       runner.speed = runner.baseSpeed * speedFactor;
       runner.x += runner.speed;
       runner.progress = runner.x / trackWidth;
@@ -188,33 +209,53 @@ function runRace(arr, trackImg) {
 function showResult(order) {
   const mode = modeSelect.value;
   const count = Math.min(parseInt(countSelect.value), selected.length);
-  let result = [];
-  if (mode === "win") result = order.slice(0, count).map(r => animalNames[r.idx]);
-  else if (mode === "lose") result = order.slice(-count).map(r => animalNames[r.idx]);
-  resultDiv.innerHTML = `🎉 ${mode === "win" ? "당첨" : "탈락"}: ${result.join(", ")}<br><button id="next-round">재시작</button>`;
-  document.getElementById("next-round").addEventListener("click", resetGame);
+  const result = (mode === "win"
+    ? order.slice(0, count)
+    : order.slice(-count)
+  ).map(r => animalNames[r.idx]);
+
+  const overlay = document.createElement("div");
+  overlay.id = "result-overlay";
+  overlay.innerHTML = `
+    🎉 ${mode === "win" ? "당첨" : "탈락"}: ${result.join(", ")}
+    <button id="next-round">재시작</button>
+  `;
+  raceContainer.appendChild(overlay);
+
+  document.getElementById("next-round").addEventListener("click", () => {
+    overlay.remove();
+    resetGame(); // ✅ 이 한 줄이면 충분
+  });
 }
 
 function resetGame() {
-  raceContainer.style.display = "none"; grid.style.display = "grid";
-  optionsDiv.style.display = "flex"; startBtn.style.display = "block";
-  resultDiv.textContent = ""; selected = [];
+  raceContainer.style.display = "none";
+  grid.style.display = "grid";
+  optionsDiv.style.display = "flex";
+  startBtn.style.display = "block";
+  resultDiv.textContent = "";
+  selected = [];
   document.querySelectorAll('.item img').forEach(img => img.classList.remove('selected'));
-  startBtn.disabled = true; modeSelect.value = "win"; updateCountOptions();
+  startBtn.disabled = true;
+  modeSelect.value = "win";
+  updateCountOptions();
 }
 
-function adjustLayout() {
-  if (!selected.length) return;
-  const screenH = window.innerHeight;
-  const availableH = screenH - document.querySelector('h1').offsetHeight - 120;
-  trackHeight = Math.max(40, Math.min((availableH / selected.length), window.innerWidth * 0.15, 60));
-  raceContainer.style.height = `${selected.length * trackHeight}px`;
-  runners.forEach((runner, i) => {
-    runner.el.style.top = `${i * trackHeight}px`;
-    runner.el.style.height = trackHeight + "px";
-    runner.el.querySelector("img").style.width = (trackHeight * 0.65) + "px";
-    runner.el.querySelector(".rank").style.fontSize = (trackHeight * 0.3) + "px";
-  });
+
+function adjustLayout(isStart = false) {
+  const totalTracks = 10;
+  trackHeight = Math.max(40, Math.min(window.innerWidth * 0.15, 60));
+
+  raceContainer.style.height = `${totalTracks * trackHeight}px`;
+
+  if (!isStart) {
+    runners.forEach((runner, i) => {
+      runner.el.style.top = `${i * trackHeight}px`;
+      runner.el.style.height = `${trackHeight}px`;
+      runner.el.querySelector("img").style.width = `${trackHeight * 0.65}px`;
+      runner.el.querySelector(".rank").style.fontSize = `${trackHeight * 0.3}px`;
+    });
+  }
 }
 
 window.addEventListener("resize", adjustLayout);
