@@ -1,12 +1,9 @@
-html,
-body {
+html, body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100vh;
-  /* ✅ 항상 한 화면에 고정 */
-  overflow: hidden;
-  /* ✅ 스크롤 제거 */
+  overflow: hidden; /* 스크롤 제거 */
 }
 
 body {
@@ -30,21 +27,15 @@ h1 {
   gap: 5px;
 }
 
-h1 img {
-  height: 1.5rem;
-  vertical-align: middle;
-}
-
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   justify-items: center;
-  justify-content: center;
   gap: 10px;
   width: 100%;
   max-width: 600px;
   backdrop-filter: blur(4px);
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255,255,255,0.8);
   padding: 10px;
   border-radius: 8px;
   box-sizing: border-box;
@@ -70,29 +61,12 @@ h1 img {
 
 .item img.selected {
   border-color: #4caf50;
-  box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+  box-shadow: 0 0 10px rgba(76,175,80,0.5);
 }
 
 .caption {
   margin-top: 6px;
   font-size: 0.9rem;
-}
-
-.options {
-  margin: 15px 0 10px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-select {
-  padding: 6px;
-  font-size: 0.9rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 150px;
-  text-align: center;
 }
 
 button {
@@ -104,7 +78,7 @@ button {
   color: white;
   border: none;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   transition: background .2s;
   width: 90%;
   max-width: 300px;
@@ -123,8 +97,7 @@ button:disabled {
   position: relative;
   width: 100%;
   max-width: 600px;
-  flex: 1;
-  /* ✅ 남은 모든 공간 차지 */
+  flex: 1; /* 남은 공간 차지 */
   margin: 10px auto;
   overflow: hidden;
   border-top: 2px solid #ccc;
@@ -132,11 +105,10 @@ button:disabled {
   background-repeat: repeat-x;
   background-size: cover;
   border-radius: 8px;
-  padding-bottom: 0;
   box-sizing: border-box;
 }
 
-/* ✅ 캐릭터별 개별 트랙 */
+/* 개별 트랙 */
 .track {
   position: absolute;
   left: 0;
@@ -144,9 +116,8 @@ button:disabled {
   background-repeat: repeat-x;
   background-position: 0 center;
   background-size: auto 100%;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(0,0,0,0.2);
 }
-
 .track:last-child {
   border-bottom: none;
 }
@@ -166,11 +137,17 @@ button:disabled {
   min-width: 30px;
   transition: transform 0.2s ease-in-out;
 }
-
 .runner.jump img {
   animation: jump 0.4s ease-out;
 }
 
+@keyframes jump {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+/* 순위 (왼쪽, 흰색+테두리) */
 .rank {
   position: absolute;
   left: -35px;
@@ -181,41 +158,41 @@ button:disabled {
   text-align: right;
   min-width: 35px;
   opacity: 0;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
 }
 
-@keyframes jump {
-  0% {
-    transform: translateY(0);
-  }
+/* 결과 텍스트 (1위 / 2위 이하) */
+.winner {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+}
 
-  50% {
-    transform: translateY(-10px);
-  }
-
-  100% {
-    transform: translateY(0);
-  }
+.others {
+  font-size: 0.9rem;
+  color: #333;
+  line-height: 1.4;
+  text-align: left;
+  margin-bottom: 12px;
 }
 
 #result-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.7);
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(255,255,255,0.7);   /* 70% 투명도 */
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #333;
-  z-index: 100;
   border-radius: 8px;
+  z-index: 100;
 }
-
 #result-overlay button {
   margin-top: 10px;
   padding: 10px 18px;
@@ -225,9 +202,22 @@ button:disabled {
   border-radius: 4px;
   cursor: pointer;
 }
-
 #result-overlay button:hover {
   background: #45a049;
+}
+
+.boost-icon {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translate(10px,-50%) scale(0.8);
+  width: 24px; height: 24px;
+  pointer-events: none;
+  animation: boost-flash 0.5s ease-out;
+}
+@keyframes boost-flash {
+  0%   { opacity: 1; transform: translate(10px,-50%) scale(1.2); }
+  100% { opacity: 0; transform: translate(10px,-50%) scale(0.8); }
 }
 
 footer {
@@ -242,31 +232,13 @@ footer {
   flex-shrink: 0;
 }
 
-.boost-icon {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translate(10px, -50%) scale(0.8);
-  width: 24px;
-  height: 24px;
-  pointer-events: none;
-  animation: boost-flash 0.5s ease-out;
-}
-
-@keyframes boost-flash {
-  0%   { opacity: 1; transform: translate(10px, -50%) scale(1.2); }
-  100% { opacity: 0; transform: translate(10px, -50%) scale(0.8); }
-}
-
 @media (max-width: 480px) {
   h1 {
     font-size: 1.5rem;
   }
-
   .grid {
-    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(70px,1fr));
   }
-
   button {
     font-size: 0.9rem;
   }
