@@ -11,6 +11,10 @@ const resultDiv = document.getElementById('result');
 const images = animalNames.map((_, i) => `./images/animal${i + 1}.png`);
 
 let selected = [], runners = [], trackWidth = 0, trackHeight = 60;
+let animationId = null;
+let lastTime = 0;
+const targetFPS = 60;
+const frameInterval = 1000 / targetFPS;
 
 // 이미지 사전 로딩 (배경 포함)
 const bgList = [
@@ -58,29 +62,118 @@ startBtn.addEventListener('click', () => {
   ];
   const trackImg = trackBgList[Math.floor(Math.random() * trackBgList.length)];
 
-  grid.style.display = 'none';
-  startBtn.style.display = 'none';
-  raceContainer.style.display = 'block';
-
-  adjustLayout();
-  runRace(selected, trackImg);
+  // 부드러운 전환 효과
+  grid.style.opacity = '0';
+  grid.style.transform = 'scale(0.95)';
+  startBtn.style.opacity = '0';
+  startBtn.style.transform = 'scale(0.95)';
+  
+  setTimeout(() => {
+    grid.style.display = 'none';
+    startBtn.style.display = 'none';
+    raceContainer.style.display = 'block';
+    
+    // 레이스 컨테이너 등장 애니메이션
+    raceContainer.style.opacity = '0';
+    raceContainer.style.transform = 'scale(0.9)';
+    
+    setTimeout(() => {
+      raceContainer.style.opacity = '1';
+      raceContainer.style.transform = 'scale(1)';
+    }, 50);
+    
+    adjustLayout();
+    showCountdown(selected, trackImg, () => runRace(selected, trackImg));
+  }, 300);
 });
 
-function runRace(arr, trackImg) {
+// 카운트다운 함수 추가
+function showCountdown(arr, trackImg, onComplete) {
+  // 먼저 동물들을 트랙에 배치 (아직 움직이지 않음)
+  prepareRunners(arr, trackImg);
+  
+  const countdownDiv = document.createElement('div');
+  countdownDiv.id = 'countdown';
+  countdownDiv.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 60px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 4px 4px 8px rgba(0,0,0,0.8);
+    z-index: 2000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    text-align: center;
+    white-space: nowrap;
+  `;
+  
+  document.body.appendChild(countdownDiv);
+  
+  let count = 3;
+  
+  function showNumber() {
+    if (count > 0) {
+      countdownDiv.textContent = count;
+      countdownDiv.style.opacity = '1';
+      countdownDiv.style.transform = 'translate(-50%, -50%) scale(1.2)';
+      
+      setTimeout(() => {
+        countdownDiv.style.opacity = '0';
+        countdownDiv.style.transform = 'translate(-50%, -50%) scale(0.8)';
+      }, 800);
+      
+      count--;
+      setTimeout(showNumber, 1000);
+    } else {
+      // START!
+      countdownDiv.textContent = 'START!';
+      countdownDiv.style.opacity = '1';
+      countdownDiv.style.transform = 'translate(-50%, -50%) scale(1.1)';
+      countdownDiv.style.color = '#FFFFFF';
+      
+      setTimeout(() => {
+        countdownDiv.style.opacity = '0';
+        countdownDiv.style.transform = 'translate(-50%, -50%) scale(0.5)';
+        
+        setTimeout(() => {
+          countdownDiv.remove();
+          onComplete();
+        }, 300);
+      }, 1000);
+    }
+  }
+  
+  showNumber();
+}
+
+// 동물들을 트랙에 미리 배치하는 함수
+function prepareRunners(arr, trackImg) {
   raceContainer.innerHTML = "";
   resultDiv.textContent = "";
   trackWidth = raceContainer.clientWidth - 60;
   runners = [];
   const finishOrder = [];
+  lastTime = performance.now();
+  const gameStartTime = performance.now(); // 게임 시작 시간 추가
 
   arr.forEach((idx, i) => {
-    // 트랙 생성
+    // 각 동물마다 개별 트랙 생성
     const track = document.createElement('div');
     track.className = 'track';
     track.style.top = `${i * trackHeight}px`;
     track.style.height = trackHeight + "px";
-    track.style.backgroundImage = `url('./images/${trackImg}')`;
+    track.style.backgroundImage = `url(./images/${trackImg})`;
+    track.style.backgroundRepeat = "repeat-x";
+    track.style.backgroundSize = "auto 100%";
+    track.style.backgroundPosition = "0px center";
+    track.style.borderRadius = '0px';
+    track.style.border = 'none';
+    
     if (i === arr.length - 1) track.style.borderBottom = "none";
+    
     raceContainer.appendChild(track);
 
     // 러너 생성
@@ -96,31 +189,23 @@ function runRace(arr, trackImg) {
 
     const rankEl = document.createElement('span');
     rankEl.className = 'rank';
-    rankEl.textContent = "0위";                  // 공간 확보용
+    rankEl.textContent = "0위";
     rankEl.style.fontSize = (trackHeight * 0.3) + "px";
-    rankEl.style.opacity = 0;                   // 초기 숨김
+    rankEl.style.opacity = 0;
 
     runner.appendChild(img);
     runner.appendChild(rankEl);
     raceContainer.appendChild(runner);
 
-    // 초기 속도 편차 설정
-    let totalFrames;
-    const randomType = Math.random();
-    if (randomType < 0.2) {
-      totalFrames = Math.random() * 20 + 380;   // 선두 그룹 (7~8초)
-    } else if (randomType < 0.8) {
-      totalFrames = Math.random() * 70 + 420;   // 보통 그룹
-    } else {
-      totalFrames = Math.random() * 50 + 470;   // 느린 그룹
-    }
-    const baseSpeed = trackWidth / totalFrames;
+    // 일관된 속도 계산 (시간 기반) - 더 긴 시간으로 조정
+    const baseDuration = 12000 + Math.random() * 6000; // 12-18초 (기존 6-8초에서 2배 증가)
+    const baseSpeed = trackWidth / (baseDuration / 16.67); // 60fps 기준
 
-    // 후반부 속도 변동 프레임
+    // 후반부 속도 변동 프레임 (더 극적으로)
     const changeFrames = [];
-    const changeCount = Math.floor(Math.random() * 2) + 5;
+    const changeCount = Math.floor(Math.random() * 4) + 6; // 6-9회 (기존 4-6회에서 증가)
     while (changeFrames.length < changeCount) {
-      const f = Math.floor(Math.random() * totalFrames * 0.95);
+      const f = Math.floor(Math.random() * (baseDuration / 16.67) * 0.9);
       if (!changeFrames.includes(f)) changeFrames.push(f);
     }
     changeFrames.sort((a, b) => a - b);
@@ -128,6 +213,7 @@ function runRace(arr, trackImg) {
     runners.push({
       idx,
       el: runner,
+      track: track, // 트랙 요소 참조 추가
       x: 0,
       progress: 0,
       baseSpeed,
@@ -136,133 +222,323 @@ function runRace(arr, trackImg) {
       frame: 0,
       slowCount: 0,
       boostCount: 0,
-      boostFrames: 0
+      boostFrames: 0,
+      lastUpdate: 0,
+      // 넘어짐 관련 속성 추가
+      isFallen: false,
+      fallFrames: 0,
+      fallCount: 0,
+      // 출발 차이 추가
+      startDelay: Math.random() * 1500 + 500, // 0.5~2초 랜덤 출발 지연
+      hasStarted: false
     });
   });
+}
 
-  // 배경 이동 효과
+function runRace(arr, trackImg) {
+  // 이미 동물들이 배치되어 있으므로 바로 애니메이션 시작
+  const finishOrder = [];
+  lastTime = performance.now();
+  const gameStartTime = performance.now(); // 게임 시작 시간 추가
+
+  // 배경 이동 효과 - 각 트랙별로 개별 처리
   let bgOffset = 0;
 
-  function animate() {
-    bgOffset -= 2;
-    document.querySelectorAll('.track').forEach(track => {
-      track.style.backgroundPosition = `${bgOffset}px center`;
-    });
-
-    const minX = Math.min(...runners.map(r => r.x));
-    const maxX = Math.max(...runners.map(r => r.x));
-
-    runners.forEach(runner => {
-      if (finishOrder.includes(runner)) return;
-      runner.frame++;
-
-      let speedFactor = 1;
-
-      // 후반부 역전/부스터 로직
-      if (runner.progress > 0.7) {
-        if (
-          runner.x === maxX &&
-          runner.slowCount < 2 &&
-          Math.random() < 0.4
-        ) {
-          speedFactor = Math.random() * 0.35 + 0.5; // 0.5~0.85×
-          runner.slowCount++;
-        } else if (
-          runner.x === minX &&
-          runner.boostCount < 2 &&
-          Math.random() < 0.5
-        ) {
-          speedFactor = Math.random() * 2.0 + 2.0;   // 2.0~4.0×
-          runner.boostCount++;
-          runner.boostFrames = 200;
-
-          const icon = document.createElement('img');
-          icon.src = './images/bolt.png';
-          icon.className = 'boost-icon';
-          runner.el.appendChild(icon);
-          setTimeout(() => icon.remove(), 500);
-        } else if (Math.random() < 0.3) {
-          speedFactor = Math.random() < 0.5
-            ? Math.random() * 0.2 + 0.9
-            : Math.random() * 0.3 + 1.0;
-        }
-      }
-
-      // 부스터 지속 처리
-      if (runner.boostFrames > 0) {
-        speedFactor *= 2.5;
-        runner.boostFrames--;
-      }
-      // 일반 변동
-      else if (runner.changeFrames.includes(runner.frame)) {
-        speedFactor = Math.random() < 0.5
-          ? Math.random() * 0.3 + 0.9
-          : Math.random() * 0.2 + 1.0;
-      }
-
-      runner.speed = runner.baseSpeed * speedFactor;
-      runner.x += runner.speed;
-      runner.progress = runner.x / trackWidth;
-      runner.el.style.transform = `translate(${runner.x}px,${Math.sin(runner.frame/5)*2}px)`;
-
-      if (runner.x >= trackWidth) {
-        finishOrder.push(runner);
-        runner.el.classList.add('jump');
-        const rank = runner.el.querySelector('.rank');
-        rank.style.opacity = 1;
-        rank.textContent = `${finishOrder.length}위`;
-        if (finishOrder.length === runners.length) showResult(finishOrder);
-      }
-    });
-
-    if (finishOrder.length < runners.length) {
-      requestAnimationFrame(animate);
+  function animate(currentTime) {
+    if (finishOrder.length >= runners.length) {
+      return;
     }
+
+    const deltaTime = currentTime - lastTime;
+    
+    if (deltaTime >= frameInterval) {
+      lastTime = currentTime - (deltaTime % frameInterval);
+      
+      // 각 트랙별로 배경 이동 (더 빠른 속도로 조정)
+      bgOffset -= 8; // 기존 3에서 8로 증가 (약 2.7배 빠름)
+      runners.forEach(runner => {
+        if (runner.track) {
+          runner.track.style.backgroundPosition = `${bgOffset}px center`;
+        }
+      });
+
+      const minX = Math.min(...runners.map(r => r.x));
+      const maxX = Math.max(...runners.map(r => r.x));
+
+      runners.forEach(runner => {
+        if (finishOrder.includes(runner)) return;
+        
+        runner.frame++;
+        runner.lastUpdate = currentTime;
+
+        // 출발 지연 처리 (수정된 로직)
+        if (!runner.hasStarted) {
+          if (currentTime - gameStartTime >= runner.startDelay) {
+            runner.hasStarted = true;
+          } else {
+            return; // 아직 출발하지 않음
+          }
+        }
+
+        // 넘어짐 상태 처리
+        if (runner.isFallen) {
+          runner.fallFrames--;
+          if (runner.fallFrames <= 0) {
+            runner.isFallen = false;
+            runner.el.classList.remove('fallen');
+            // 넘어짐 후 부스터 효과
+            runner.boostFrames = 100;
+          } else {
+            // 넘어짐 중에는 움직이지 않음
+            return;
+          }
+        }
+
+        // 넘어짐 이벤트 (매우 낮은 확률)
+        if (!runner.isFallen && runner.fallCount < 1 && Math.random() < 0.0002) {
+          runner.isFallen = true;
+          runner.fallFrames = 90; // 1.5초간 멈춤
+          runner.fallCount++;
+          runner.el.classList.add('fallen');
+          
+          // 넘어짐 애니메이션 효과
+          const fallIcon = document.createElement('div');
+          fallIcon.className = 'fall-icon';
+          fallIcon.textContent = '💥';
+          fallIcon.style.position = 'absolute';
+          fallIcon.style.right = '10px';
+          fallIcon.style.top = '50%';
+          fallIcon.style.transform = 'translateY(-50%)';
+          fallIcon.style.fontSize = '20px';
+          fallIcon.style.zIndex = '10';
+          runner.el.appendChild(fallIcon);
+          
+          setTimeout(() => fallIcon.remove(), 1000);
+        }
+
+        let speedFactor = 1;
+
+        // 중간 지점에서 갑작스러운 스퍼트 (아이콘 없이, 적당한 효과)
+        if (runner.progress > 0.2 && runner.progress < 0.8 && Math.random() < 0.015) { // 0.02에서 0.015로 감소
+          speedFactor *= Math.random() * 1.5 + 1.5; // 1.5~3.0× (더 적당하게)
+          runner.boostFrames = 100;
+        }
+
+        // 후반부 역전/부스터 로직 (아이콘 없이, 적당한 효과)
+        if (runner.progress > 0.5) {
+          if (
+            runner.x === maxX &&
+            runner.slowCount < 2 && // 3에서 2로 감소
+            Math.random() < 0.2 // 0.3에서 0.2로 감소
+          ) {
+            // 선두가 갑자기 느려짐 (적당하게)
+            speedFactor = Math.random() * 0.3 + 0.5; // 0.5~0.8× (너무 느려지지 않게)
+            runner.slowCount++;
+            
+          } else if (
+            runner.x === minX &&
+            runner.boostCount < 2 && // 3에서 2로 감소
+            Math.random() < 0.25 // 0.4에서 0.25로 감소
+          ) {
+            // 꼴찌가 갑자기 빨라짐 (적당하게)
+            speedFactor = Math.random() * 1.5 + 2.0;   // 2.0~3.5× (더 적당하게)
+            runner.boostCount++;
+            runner.boostFrames = 120;
+
+            // 부스터 효과 표시 (캐릭터 앞쪽)
+            const boostIcon = document.createElement('div');
+            boostIcon.className = 'boost-icon';
+            boostIcon.textContent = '⚡';
+            boostIcon.style.position = 'absolute';
+            boostIcon.style.right = '-30px';
+            boostIcon.style.top = '50%';
+            boostIcon.style.transform = 'translateY(-50%)';
+            boostIcon.style.fontSize = '20px';
+            boostIcon.style.zIndex = '10';
+            runner.el.appendChild(boostIcon);
+            setTimeout(() => boostIcon.remove(), 500);
+          } else if (Math.random() < 0.15) { // 0.25에서 0.15로 감소
+            // 일반적인 속도 변동 (적당하게)
+            speedFactor = Math.random() < 0.5
+              ? Math.random() * 0.2 + 0.6  // 0.6~0.8× (너무 느려지지 않게)
+              : Math.random() * 0.8 + 1.2; // 1.2~2.0× (적당하게 빨라짐)
+          }
+        }
+
+        // 부스터 지속 처리 (적당한 효과)
+        if (runner.boostFrames > 0) {
+          speedFactor *= 1.5; // 2.0에서 1.5로 감소
+          runner.boostFrames--;
+        }
+        // 일반 변동 (적당한 빈도, 적당한 효과)
+        else if (runner.changeFrames.includes(runner.frame)) {
+          speedFactor = Math.random() < 0.4
+            ? Math.random() * 0.2 + 0.6  // 0.6~0.8× (너무 느려지지 않게)
+            : Math.random() * 0.6 + 1.2; // 1.2~1.8× (적당하게 빨라짐)
+        }
+
+        // 기본 속도 보정 (아이템이 없어도 적당한 속도 유지)
+        if (speedFactor < 0.7) {
+          speedFactor = 0.7; // 너무 느려지지 않도록 최소 속도 보장
+        }
+
+        runner.speed = runner.baseSpeed * speedFactor;
+        runner.x += runner.speed;
+        runner.progress = runner.x / trackWidth;
+        
+        // 더 역동적인 움직임 (빠른 움직임 느낌 강화)
+        const wobble = Math.sin(runner.frame / 8) * 2.5; // 기존 12에서 8로, 1.2에서 2.5로 증가
+        const rotation = Math.sin(runner.frame / 15) * 3; // 새로운 회전 효과 추가
+        const bounce = Math.abs(Math.sin(runner.frame / 10)) * 1.5; // 새로운 바운스 효과 추가
+        
+        runner.el.style.transform = `translate3d(${runner.x}px, ${wobble + bounce}px, 0) rotate(${rotation}deg)`;
+
+        // 피니시 라인 긴장감 (마지막 20% 구간)
+        if (runner.progress > 0.8) {
+          // 피니시 근처 극한 속도 변화
+          if (Math.random() < 0.08) { // 더 자주 발생
+            if (runner.x === maxX) {
+              // 선두가 갑자기 느려짐 (극한 긴장감)
+              speedFactor = Math.random() * 0.2 + 0.3; // 0.3~0.5× (더 극적으로 느려짐)
+              
+              // 슬로우 효과 표시 (피니시에서는 아이콘 표시)
+              const slowIcon = document.createElement('div');
+              slowIcon.className = 'slow-icon';
+              slowIcon.textContent = '🐌';
+              slowIcon.style.position = 'absolute';
+              slowIcon.style.left = '-30px';
+              slowIcon.style.top = '50%';
+              slowIcon.style.transform = 'translateY(-50%)';
+              slowIcon.style.fontSize = '20px';
+              slowIcon.style.zIndex = '10';
+              runner.el.appendChild(slowIcon);
+              setTimeout(() => slowIcon.remove(), 1000);
+              
+            } else if (runner.x === minX) {
+              // 꼴찌가 갑자기 빨라짐 (극한 역전)
+              speedFactor = Math.random() * 2.0 + 3.0; // 3.0~5.0× (더 극적으로 빨라짐)
+              runner.boostFrames = 150;
+
+              // 부스터 효과 표시 (피니시에서는 더 큰 아이콘)
+              const boostIcon = document.createElement('div');
+              boostIcon.className = 'boost-icon';
+              boostIcon.textContent = '⚡';
+              boostIcon.style.position = 'absolute';
+              boostIcon.style.right = '-30px';
+              boostIcon.style.top = '50%';
+              boostIcon.style.transform = 'translateY(-50%)';
+              boostIcon.style.fontSize = '24px';
+              boostIcon.style.zIndex = '10';
+              runner.el.appendChild(boostIcon);
+              setTimeout(() => boostIcon.remove(), 800);
+              
+            } else {
+              // 중간 순위들의 극한 변동
+              speedFactor = Math.random() < 0.5
+                ? Math.random() * 0.3 + 0.4  // 0.4~0.7× (느려짐)
+                : Math.random() * 1.5 + 2.0; // 2.0~3.5× (빨라짐)
+            }
+          }
+        }
+
+        if (runner.x >= trackWidth) {
+          finishOrder.push(runner);
+          runner.el.classList.add('jump');
+          const rank = runner.el.querySelector('.rank');
+          rank.style.opacity = 1;
+          rank.textContent = `${finishOrder.length}위`;
+          
+          // 순위별 색상 차별화
+          if (finishOrder.length === 1) {
+            rank.style.color = '#FFD700'; // 금색
+            rank.style.textShadow = '-2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000';
+          } else if (finishOrder.length === 2) {
+            rank.style.color = '#C0C0C0'; // 은색
+          } else if (finishOrder.length === 3) {
+            rank.style.color = '#CD7F32'; // 동색
+          }
+          
+          if (finishOrder.length === runners.length) {
+            setTimeout(() => showResult(finishOrder), 800);
+          }
+        }
+      });
+    }
+
+    animationId = requestAnimationFrame(animate);
   }
 
-  requestAnimationFrame(animate);
+  animationId = requestAnimationFrame(animate);
 }
 
 function showResult(order) {
-  // 1위
   const winner = order[0];
-  // 2위 이하 리스트
   const rest = order.slice(1)
     .map((r, i) => `${i+2}위: ${animalNames[r.idx]}`)
     .join('<br>');
 
-  // 오버레이 생성
+  // 배경 오버레이 생성
+  const backdrop = document.createElement('div');
+  backdrop.className = 'result-backdrop';
+  document.body.appendChild(backdrop);
+
   const overlay = document.createElement('div');
   overlay.id = "result-overlay";
   overlay.innerHTML = `
     <div class="winner">🎉 당첨: ${animalNames[winner.idx]}</div>
     <div class="others">${rest}</div>
-    <button id="next-round">재시작</button>
+    <button id="next-round">다시 시작</button>
   `;
 
-  // raceContainer 위에 덧붙이기
-  raceContainer.appendChild(overlay);
+  // body에 직접 추가 (전체 화면 덮기)
+  document.body.appendChild(overlay);
 
-  // 버튼 이벤트
   document.getElementById("next-round").addEventListener("click", () => {
-    overlay.remove();
-    resetGame();
+    overlay.style.opacity = '0';
+    backdrop.style.opacity = '0';
+    setTimeout(() => {
+      overlay.remove();
+      backdrop.remove();
+      resetGame();
+    }, 150);
   });
 }
 
 function resetGame() {
-  raceContainer.style.display = "none";
-  grid.style.display = "grid";
-  startBtn.style.display = "block";
-  resultDiv.textContent = "";
-  selected = [];
-  document.querySelectorAll('.item img').forEach(img => img.classList.remove('selected'));
-  startBtn.disabled = true;
+  // 애니메이션 정리
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+    animationId = null;
+  }
+  
+  raceContainer.style.opacity = '0';
+  raceContainer.style.transform = 'scale(0.9)';
+  
+  setTimeout(() => {
+    raceContainer.style.display = "none";
+    grid.style.display = "grid";
+    startBtn.style.display = "block";
+    
+    // 초기 상태로 복원
+    grid.style.opacity = '1';
+    grid.style.transform = 'scale(1)';
+    startBtn.style.opacity = '1';
+    startBtn.style.transform = 'scale(1)';
+    
+    resultDiv.textContent = "";
+    selected = [];
+    document.querySelectorAll('.item img').forEach(img => img.classList.remove('selected'));
+    startBtn.disabled = true;
+  }, 300);
 }
 
 function adjustLayout() {
-  trackHeight = Math.max(40, Math.min(window.innerWidth * 0.15, 60));
-  raceContainer.style.height = `${selected.length * trackHeight}px`;
+  // 트랙 높이를 동일하게 고정 (동물 수와 무관)
+  trackHeight = 60;
+  
+  // 트랙 컨테이너 높이를 트랙 크기에 정확히 맞춤
+  const containerHeight = trackHeight * selected.length;
+  raceContainer.style.height = `${containerHeight}px`;
 
   runners.forEach((runner, i) => {
     runner.el.style.top = `${i * trackHeight}px`;
@@ -271,7 +547,7 @@ function adjustLayout() {
 
     const rankEl = runner.el.querySelector(".rank");
     rankEl.style.fontSize = `${trackHeight * 0.3}px`;
-    rankEl.style.left = `-${trackHeight * 0.5}px`; // 동물 왼쪽에 고정
+    rankEl.style.left = `-${trackHeight * 0.55}px`;
   });
 }
 

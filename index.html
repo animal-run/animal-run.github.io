@@ -2,9 +2,10 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
 
-    <title>무료 온라인 추첨기 - 동물 달리기 뽑기 게임 | 애니멀고</title>
+    <title>Animal Run - 동물 달리기 추첨 게임</title>
     <meta name="description" content="동물들이 달려서 순위를 정하는 무료 온라인 추첨기! 회식, 모임, 벌칙 정하기에 딱 좋은 달리기 뽑기 게임. 설치 없이 바로 사용 가능.">
     <meta name="keywords" content="추첨, 뽑기, 달리기 추첨, 동물 추첨, 온라인 추첨기, 벌칙 추첨, 랜덤 뽑기">
     <meta name="author" content="애니멀고">
@@ -22,36 +23,50 @@
     <meta name="twitter:description" content="무료 온라인 추첨기! 달리는 동물로 재밌게 순위를 정하세요.">
     <meta name="twitter:image" content="./images/favicon.png">
 
-  <link rel="icon" href="./images/favicon.png" type="image/png">
-  <link rel="stylesheet" href="style.css">
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-051Z2PPL5H"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-  
-    gtag('config', 'G-051Z2PPL5H');
-  </script>
+    <!-- ✅ PWA 지원 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="애니멀고">
+
+    <link rel="icon" href="./images/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="./images/favicon.png">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-051Z2PPL5H"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-051Z2PPL5H');
+    </script>
 </head>
 <body>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4252360374523568"
-    crossorigin="anonymous"></script>
-    
-  <h1>🐾 애니멀고 🏁</h1>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4252360374523568"
+        crossorigin="anonymous"></script>
+        
+    <header>
+        <h1>🐾 애니멀고 🏁</h1>
+        <p class="subtitle">동물들과 함께하는 재미있는 달리기 추첨</p>
+    </header>
 
-  <div class="grid" id="animal-grid"></div>
+    <main>
+        <div class="grid" id="animal-grid"></div>
 
-  <button id="start-btn" disabled>시작</button>
+        <button id="start-btn" disabled>시작</button>
 
-  <div id="race-container" style="display:none;"></div>
-  <div id="result"></div>
+        <div id="race-container" style="display:none;"></div>
+        <div id="result"></div>
+    </main>
 
-  <footer>
-    © 2025 애니멀고 | 동물들과 함께하는 달리기 추첨 레이스  
-    <br>문의: gimcode90@gmail.com
-  </footer>
+    <footer>
+        <div class="footer-content">
+            <p>© 2025 애니멀고 | 동물들과 함께하는 달리기 추첨 레이스</p>
+            <p class="contact">문의: <a href="mailto:gimcode90@gmail.com">gimcode90@gmail.com</a></p>
+        </div>
+    </footer>
 
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
