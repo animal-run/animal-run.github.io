@@ -1,11 +1,36 @@
 // script.js
 
+// 게임 팁 배열
+const gameTips = [
+  "💡 동물을 많이 선택할수록 더 재미있는 경주가 됩니다!",
+  "💡 달리는 중 동물이 넘어질 수 있어요. 긴장감이 가득합니다!",
+  "💡 꼴찌가 갑자기 빨라져서 역전할 수도 있어요!",
+  "💡 선두가 느려져서 순위가 뒤바뀔 수 있습니다!",
+  "💡 마지막 20% 구간에서 극한의 긴장감을 느껴보세요!",
+  "💡 동물마다 다른 속도로 달려요. 예측이 어려워요!",
+  "💡 부스터를 받은 동물은 순식간에 앞으로 나갑니다!",
+  "💡 결과는 완전히 랜덤이에요. 누가 이길지 모릅니다!",
+  "💡 3,2,1 카운트다운 후에 경주가 시작됩니다!"
+];
+
+// 랜덤 팁 표시 함수
+function showRandomTip() {
+  const tipElement = document.querySelector('.tip-text');
+  const randomTip = gameTips[Math.floor(Math.random() * gameTips.length)];
+  tipElement.textContent = randomTip;
+}
+
+// 페이지 로드 시 팁 표시
+document.addEventListener('DOMContentLoaded', () => {
+  showRandomTip();
+});
+
 const animalNames = [
   '원숭이', '펭귄', '분홍 토끼', '기린', '여우',
   '코끼리', '판다', '호랑이', '코알라', '흰색 토끼'
 ];
 const grid = document.getElementById('animal-grid');
-const startBtn = document.getElementById('start-btn');
+const startBtn = document.getElementById('startBtn');
 const raceContainer = document.getElementById('race-container');
 const resultDiv = document.getElementById('result');
 const images = animalNames.map((_, i) => `./images/animal${i + 1}.png`);
@@ -54,25 +79,43 @@ function toggleSelect(img, idx) {
   startBtn.disabled = selected.length < 2;
 }
 
-startBtn.addEventListener('click', () => {
-  const trackBgList = [
-    'background-track.webp',
-    'background-sand.webp',
-    'background-savannah.webp'
-  ];
-  const trackImg = trackBgList[Math.floor(Math.random() * trackBgList.length)];
-
-  // 부드러운 전환 효과
-  grid.style.opacity = '0';
-  grid.style.transform = 'scale(0.95)';
-  startBtn.style.opacity = '0';
-  startBtn.style.transform = 'scale(0.95)';
-  
-  setTimeout(() => {
-    grid.style.display = 'none';
-    startBtn.style.display = 'none';
-    raceContainer.style.display = 'block';
+  // 게임 시작
+  startBtn.addEventListener('click', () => {
+    if (selected.length < 2) return;
     
+    // UI 전환
+    grid.style.opacity = '0';
+    grid.style.transform = 'scale(0.95)';
+    startBtn.style.opacity = '0';
+    startBtn.style.transform = 'scale(0.95)';
+    
+    setTimeout(() => {
+      grid.style.display = 'none';
+      startBtn.style.display = 'none';
+      
+      // 게임 팁 숨기기
+      const gameTip = document.getElementById('gameTip');
+      if (gameTip) {
+        gameTip.style.display = 'none';
+      }
+      
+      raceContainer.style.display = 'block';
+      raceContainer.style.opacity = '1';
+      raceContainer.style.transform = 'scale(1)';
+      
+      startRace();
+    }, 300);
+  });
+
+  // 게임 시작 함수
+  function startRace() {
+    const trackBgList = [
+      'background-track.webp',
+      'background-sand.webp',
+      'background-savannah.webp'
+    ];
+    const trackImg = trackBgList[Math.floor(Math.random() * trackBgList.length)];
+
     // 레이스 컨테이너 등장 애니메이션
     raceContainer.style.opacity = '0';
     raceContainer.style.transform = 'scale(0.9)';
@@ -84,10 +127,9 @@ startBtn.addEventListener('click', () => {
     
     adjustLayout();
     showCountdown(selected, trackImg, () => runRace(selected, trackImg));
-  }, 300);
-});
+  }
 
-// 카운트다운 함수 추가
+  // 카운트다운 함수 추가
 function showCountdown(arr, trackImg, onComplete) {
   // 먼저 동물들을 트랙에 배치 (아직 움직이지 않음)
   prepareRunners(arr, trackImg);
@@ -451,7 +493,7 @@ function runRace(arr, trackImg) {
           // 순위별 색상 차별화
           if (finishOrder.length === 1) {
             rank.style.color = '#FFD700'; // 금색
-            rank.style.textShadow = '-2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000';
+            rank.style.textShadow = '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000';
           } else if (finishOrder.length === 2) {
             rank.style.color = '#C0C0C0'; // 은색
           } else if (finishOrder.length === 3) {
@@ -525,10 +567,19 @@ function resetGame() {
     startBtn.style.opacity = '1';
     startBtn.style.transform = 'scale(1)';
     
+    // 게임 팁 다시 보이기
+    const gameTip = document.getElementById('gameTip');
+    if (gameTip) {
+      gameTip.style.display = 'block';
+    }
+    
     resultDiv.textContent = "";
     selected = [];
     document.querySelectorAll('.item img').forEach(img => img.classList.remove('selected'));
     startBtn.disabled = true;
+    
+    // 새로운 팁 표시
+    showRandomTip();
   }, 300);
 }
 
