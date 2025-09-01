@@ -551,8 +551,6 @@ footer {
   }
 }
 
-
-
 /* 게임 팁 스타일 */
 .game-tip {
   background: rgba(255, 255, 255, 0.9);
@@ -604,4 +602,8 @@ footer {
   .info-section {
     color: #e2e8f0;
   }
+}
+
+.hidden {
+  display: none !important;
 }
