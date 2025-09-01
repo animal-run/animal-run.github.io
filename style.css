@@ -589,3 +589,19 @@ footer {
   0% { opacity: 0.7; transform: scale(1); }
   100% { opacity: 1; transform: scale(1.1); }
 }
+
+.info-section {
+  max-width: 800px;
+  margin: 20px auto 10px;
+  padding: 0 16px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #1e293b; /* 어두운 파란 계열로 가독성 확보 */
+  text-align: left;
+}
+
+@media (prefers-color-scheme: dark) {
+  .info-section {
+    color: #e2e8f0;
+  }
+}
