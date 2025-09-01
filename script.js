@@ -92,6 +92,7 @@ function toggleSelect(img, idx) {
     setTimeout(() => {
       grid.style.display = 'none';
       startBtn.style.display = 'none';
+      document.querySelector('.info-section')?.classList.add('hidden');
       
       // 게임 팁 숨기기
       const gameTip = document.getElementById('gameTip');
