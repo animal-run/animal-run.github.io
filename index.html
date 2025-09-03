@@ -51,21 +51,6 @@
     </header>
 
     <main>
-        <section class="info-section">
-            <p>동물들이 달리며 순위를 정하는 간단한 추첨 게임입니다. 회식이나 벌칙 정하기에 활용해 보세요!</p>
-        </section>
-
-        <!-- ✅ 광고 삽입 (콘텐츠 아래 자연스럽게 배치) -->
-        <div class="adsense-container" style="margin: 20px 0; text-align: center;">
-            <ins class="adsbygoogle"
-                style="display:block"
-                data-ad-client="ca-pub-4252360374523568"
-                data-ad-slot="8274209599"
-                data-ad-format="auto"
-                data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        </div>
-
         <div class="grid" id="animal-grid"></div>
 
         <button id="startBtn">시작하기</button>
@@ -76,19 +61,71 @@
         </div>
 
         <div id="race-container" style="display:none;"></div>
+        
+        <!-- 게임 화면 광고 -->
+        <div id="gameAd" style="margin: 20px 0; text-align: center; display: none;">
+            <ins class="adsbygoogle"
+                style="display:block"
+                data-ad-client="ca-pub-4252360374523568"
+                data-ad-slot="8274209599"
+                data-ad-format="auto"
+                data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
         <div id="result"></div>
+
+        <!-- 게임 설명 버튼 -->
+        <button id="helpBtn" class="help-btn">❓ 게임 설명</button>
+
     </main>
+
+
+
+    <!-- 게임 설명 모달 팝업 -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎮 게임 방법</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="description-content">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <p>참가할 동물을 2~10마리 선택하세요</p>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <p>시작하기 버튼을 눌러 경주를 시작하세요</p>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <p>동물들이 달려서 순위를 정합니다!</p>
+                    </div>
+                </div>
+                <div class="features">
+                    <h3>✨ 주요 특징</h3>
+                    <ul>
+                        <li>🎯 완전 랜덤 결과로 공정한 추첨</li>
+                        <li>🏃‍♂️ 실시간 애니메이션으로 생생한 경주</li>
+                        <li>🎉 회식, 모임, 벌칙 정하기에 최적</li>
+                        <li>📱 모바일과 PC 모두 지원</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <div class="footer-content">
             <p>© 2025 애니멀고 | 동물들과 함께하는 달리기 추첨 레이스</p>
             <p class="contact">문의: <a href="mailto:gimcode90@gmail.com">gimcode90@gmail.com</a></p>
+            <p class="legal-links">
+                <a href="privacy.html">개인정보처리방침</a>
+            </p>
         </div>
     </footer>
 
     <script src="script.js"></script>
-</body>
-</html>
-  <script src="script.js"></script>
 </body>
 </html>

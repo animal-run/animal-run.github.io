@@ -1,0 +1,27 @@
+{
+  "name": "애니멀고 - 동물 달리기 추첨 게임",
+  "short_name": "애니멀고",
+  "description": "동물들이 달려서 순위를 정하는 무료 온라인 추첨기! 회식, 모임, 벌칙 정하기에 딱 좋은 달리기 뽑기 게임.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "./images/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./images/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment", "utilities"],
+  "lang": "ko",
+  "dir": "ltr"
+}

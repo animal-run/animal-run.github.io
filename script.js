@@ -100,9 +100,24 @@ function toggleSelect(img, idx) {
         gameTip.style.display = 'none';
       }
       
+      // 게임 설명 버튼과 푸터 숨기기
+      const helpBtn = document.getElementById('helpBtn');
+      const footer = document.querySelector('footer');
+      if (helpBtn) helpBtn.style.display = 'none';
+      if (footer) footer.style.display = 'none';
+      
       raceContainer.style.display = 'block';
       raceContainer.style.opacity = '1';
       raceContainer.style.transform = 'scale(1)';
+      
+      // 게임 화면 광고 표시
+      const gameAd = document.getElementById('gameAd');
+      if (gameAd) {
+        gameAd.style.display = 'block';
+        console.log('게임 광고 표시됨');
+      } else {
+        console.log('게임 광고 요소를 찾을 수 없음');
+      }
       
       startRace();
     }, 300);
@@ -557,6 +572,15 @@ function resetGame() {
   raceContainer.style.opacity = '0';
   raceContainer.style.transform = 'scale(0.9)';
   
+  // 게임 화면 광고 숨기기
+  const gameAd = document.getElementById('gameAd');
+  if (gameAd) {
+    gameAd.style.display = 'none';
+    console.log('게임 광고 숨김');
+  } else {
+    console.log('게임 광고 요소를 찾을 수 없음 (숨기기)');
+  }
+  
   setTimeout(() => {
     raceContainer.style.display = "none";
     grid.style.display = "grid";
@@ -573,6 +597,12 @@ function resetGame() {
     if (gameTip) {
       gameTip.style.display = 'block';
     }
+    
+    // 게임 설명 버튼과 푸터 다시 보이기
+    const helpBtn = document.getElementById('helpBtn');
+    const footer = document.querySelector('footer');
+    if (helpBtn) helpBtn.style.display = 'block';
+    if (footer) footer.style.display = 'block';
     
     resultDiv.textContent = "";
     selected = [];
@@ -604,6 +634,52 @@ function adjustLayout() {
 }
 
 window.addEventListener("resize", adjustLayout);
+
+// 모달 팝업 기능
+const helpModal = document.getElementById('helpModal');
+const helpBtn = document.getElementById('helpBtn');
+const closeBtn = document.querySelector('.close');
+
+// 게임 설명 버튼 클릭 시 모달 열기
+helpBtn.addEventListener('click', () => {
+  helpModal.style.display = 'block';
+  document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+});
+
+// X 버튼 클릭 시 모달 닫기
+closeBtn.addEventListener('click', () => {
+  helpModal.style.display = 'none';
+  document.body.style.overflow = 'auto'; // 배경 스크롤 복원
+});
+
+// 모달 외부 클릭 시 닫기
+window.addEventListener('click', (event) => {
+  if (event.target === helpModal) {
+    helpModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+});
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && helpModal.style.display === 'block') {
+    helpModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+});
+
+// PWA Service Worker 등록
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then((registration) => {
+        console.log('Service Worker 등록 성공:', registration.scope);
+      })
+      .catch((error) => {
+        console.log('Service Worker 등록 실패:', error);
+      });
+  });
+}
 
 // 초기 버튼 비활성화
 startBtn.disabled = true;
