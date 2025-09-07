@@ -566,7 +566,6 @@ footer {
   #race-container {
     max-width: 95%;
     border-radius: 0;
-    min-height: 350px;
   }
 }
 
@@ -600,9 +599,7 @@ footer {
     padding: 15px;
   }
   
-  #race-container {
-    min-height: 300px;
-  }
+  /* 작은 화면에서도 내용에 따라 높이가 결정되도록 유지 */
 }
 
 /* 다크 모드 지원 */
@@ -635,9 +632,10 @@ footer {
     color: #cbd5e1;
   }
   
+  /* 레이스 컨테이너는 투명 유지 (작은 참가 수에서 배경 오버레이 방지) */
   #race-container {
-    background: rgba(30, 41, 59, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
+    border: none;
   }
   
   footer {
