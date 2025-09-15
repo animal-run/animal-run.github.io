@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.animalrun", 
+      "sha256_cert_fingerprints": [
+        "2C:79:E3:11:18:30:B2:38:7F:00:B6:7E:03:CC:3D:F4:71:AF:C4:18:50:77:86:D2:00:D2:E6:6C:04:22:56:29"
+      ]
+    }
+  }
+]
