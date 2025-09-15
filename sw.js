@@ -1,4 +1,4 @@
-const CACHE_NAME = 'animal-run-v1';
+const CACHE_NAME = 'animal-run-v2';
 const urlsToCache = [
   './',
   './index.html',
@@ -20,45 +20,35 @@ const urlsToCache = [
   './images/background-track.webp'
 ];
 
-// Service Worker 설치 시 캐시에 파일들 저장
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('캐시가 열렸습니다');
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
+  self.skipWaiting();
 });
 
-// 요청 시 캐시에서 파일 반환
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // 캐시에 있으면 캐시된 응답 반환
-        if (response) {
-          return response;
-        }
-        // 캐시에 없으면 네트워크에서 가져오기
-        return fetch(event.request);
-      }
-    )
-  );
-});
-
-// 캐시 업데이트
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('이전 캐시 삭제:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
+    caches.keys().then(cacheNames => Promise.all(
+      cacheNames.map(name => name !== CACHE_NAME && caches.delete(name))
+    ))
+  );
+  self.clients.claim();
+});
+
+// stale-while-revalidate 전략
+self.addEventListener('fetch', event => {
+  const request = event.request;
+  if (request.method !== 'GET') return;
+
+  event.respondWith(
+    caches.match(request).then(cached => {
+      const fetchPromise = fetch(request).then(response => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+        return response;
+      }).catch(() => cached);
+      return cached || fetchPromise;
     })
   );
 });
